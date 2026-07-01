@@ -215,7 +215,7 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
       environment_id: values.environment_id || undefined,
       lot: undefined,
     };
-    const { error } = await callEdgeFunction("register-entry", payload as Record<string, unknown>);
+    const { error } = await callEdgeFunction("register-entry", payload as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
     reset();
