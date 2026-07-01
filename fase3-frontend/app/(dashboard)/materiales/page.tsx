@@ -103,7 +103,7 @@ export default function MaterialesPage() {
   return (
     <div>
       <Header title="Materiales" subtitle="Catálogo de insumos y medicamentos" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader
           title="Catálogo de Materiales"
           description={`${materials?.length ?? 0} materiales activos`}

@@ -43,7 +43,7 @@ export default function MovimientosPage() {
   return (
     <div>
       <Header title="Movimientos" subtitle="Entradas, salidas y ajustes de inventario" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader title="Control de Movimientos" />
 
         {/* Tabs */}

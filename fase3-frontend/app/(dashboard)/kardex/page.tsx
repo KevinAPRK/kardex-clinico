@@ -30,7 +30,7 @@ export default function KardexPage() {
   return (
     <div>
       <Header title="Kardex" subtitle="Historial de movimientos con saldo corrido por material" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader title="Kardex de Material" description="Datos provistos por get_kardex() — inmutables" />
 
         {/* Filters */}

@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useDashboardSidebar } from "@/components/layout/DashboardShell";
 
 const nav = [
   { href: "/dashboard",    label: "Dashboard",    icon: LayoutDashboard },
@@ -26,6 +27,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const db = createClient();
+  const { mobileOpen, closeMobileSidebar } = useDashboardSidebar();
 
   async function handleLogout() {
     await db.auth.signOut();
@@ -33,7 +35,22 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-ev-navy text-white">
+    <>
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-slate-950/50 transition-opacity lg:hidden",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={closeMobileSidebar}
+        aria-hidden="true"
+      />
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-ev-navy text-white transition-transform duration-300 lg:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-ev-dark">
         <ActivitySquare className="h-6 w-6 text-ev-gold" />
@@ -51,6 +68,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={closeMobileSidebar}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 active
@@ -75,6 +93,7 @@ export function Sidebar() {
           Cerrar sesión
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

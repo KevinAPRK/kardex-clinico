@@ -26,7 +26,7 @@ export default function DashboardPage() {
         subtitle="Resumen general del inventario clínico"
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-6 sm:p-6">
         {/* ── Stat Cards ── */}
         {summaryLoading ? (
           <LoadingSpinner text="Cargando resumen..." />

@@ -75,7 +75,7 @@ export default function ProveedoresPage() {
   return (
     <div>
       <Header title="Proveedores" subtitle="Gestión de proveedores de insumos" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader
           title="Proveedores"
           description={`${suppliers?.length ?? 0} proveedores activos`}

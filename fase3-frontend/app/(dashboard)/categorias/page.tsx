@@ -84,7 +84,7 @@ export default function CategoriasPage() {
   return (
     <div>
       <Header title="Categorías" subtitle="Clasificación de productos y materiales" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader
           title="Categorías de Productos"
           description={`${categories?.length ?? 0} categorías activas`}

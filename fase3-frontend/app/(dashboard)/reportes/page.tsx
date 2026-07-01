@@ -145,7 +145,7 @@ export default function ReportesPage() {
   return (
     <div>
       <Header title="Reportes" subtitle="Análisis y exportación de datos de inventario" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <PageHeader
           title="Reportes de Movimientos"
           action={
