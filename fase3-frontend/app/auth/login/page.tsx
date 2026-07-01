@@ -1,9 +1,10 @@
 "use client";
 // app/auth/login/page.tsx
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ActivitySquare, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,41 +36,27 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="grid min-h-screen lg:grid-cols-2">
-        <section className="hidden flex-col justify-between bg-[#12172a] px-8 py-7 text-white lg:flex">
+        <section className="hidden flex-col bg-[#12172a] px-8 py-7 text-white lg:flex">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-ev-gold/80 text-ev-gold">
-              <ActivitySquare className="h-5 w-5" />
-            </div>
             <span className="text-[1.05rem] font-semibold tracking-tight text-white">Kardex Evolution</span>
           </div>
 
-          <div className="max-w-[680px] pb-4">
-            <blockquote className="max-w-[640px] text-[1.7rem] font-light leading-[1.5] text-slate-200 xl:text-[1.9rem]">
-              "Control de inventario hospitalario con trazabilidad completa, FEFO automatizado y alertas en tiempo real."
-            </blockquote>
-
-            <div className="mt-8 grid max-w-[680px] grid-cols-3 gap-4">
-              {[
-                { label: "FEFO", desc: "Automático" },
-                { label: "Lotes", desc: "Trazables" },
-                { label: "Stock", desc: "Tiempo real" },
-              ].map(({ label, desc }) => (
-                <div key={label} className="rounded-xl bg-[#262d41] px-4 py-5 shadow-sm">
-                  <p className="text-lg font-semibold text-ev-gold">{label}</p>
-                  <p className="mt-1 text-sm text-slate-300">{desc}</p>
-                </div>
-              ))}
-            </div>
+          <div className="flex flex-1 items-center justify-center py-8">
+            <Image
+              src="/new-logo.png"
+              alt="Truicios"
+              width={706}
+              height={339}
+              priority
+              className="h-auto w-full max-w-[460px] object-contain"
+            />
           </div>
-
-          <p className="text-xs text-slate-500">Sistema de Inventario Clínico — Todos los derechos reservados</p>
         </section>
 
         <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-10">
           <div className="w-full max-w-md">
             <div className="mb-6 text-center lg:text-left">
               <h2 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Iniciar sesión</h2>
-              <p className="mt-2 text-sm text-slate-500">Ingresa con tus credenciales institucionales</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
