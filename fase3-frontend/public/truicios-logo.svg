@@ -1,0 +1,56 @@
+<svg width="800" height="360" viewBox="0 0 800 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="360" fill="#F3F3F3"/>
+
+  <defs>
+    <linearGradient id="goldLine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E2AD00"/>
+      <stop offset="100%" stop-color="#C98D00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left tooth -->
+  <g transform="translate(155 50)">
+    <path d="M36 24C27 27 19 34 14 44C8 55 6 69 7 84C8 108 4 127 3 141C2 155 3 170 9 183C15 196 26 202 35 202C46 202 52 193 55 176C58 162 58 145 60 130C62 117 65 106 72 106C79 106 81 117 83 130C85 145 85 162 88 176C91 193 97 202 108 202C117 202 128 196 134 183C140 170 141 155 140 141C139 127 135 108 136 84C137 69 135 55 129 44C124 34 116 27 107 24C98 21 89 22 81 26C74 22 67 20 36 24Z" fill="#D5D5D5"/>
+    <path d="M18 45L55 77L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M55 77L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M34 202L55 77L88 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M18 45L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M55 77L81 26L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M55 77L81 26L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.9"/>
+    <path d="M102 47L129 44L140 84L136 141L88 202L102 47Z" fill="#B8B8B8" opacity="0.88"/>
+    <path d="M18 45L34 202L24 202C15 202 7 196 3 183C-3 170 -2 155 -1 141L18 45Z" fill="#9F9F9F" opacity="0.9"/>
+    <path d="M81 26C89 22 98 21 107 24C116 27 124 34 129 44L102 47L81 26Z" fill="#E0E0E0"/>
+  </g>
+
+  <!-- Middle tooth -->
+  <g transform="translate(305 50)">
+    <path d="M36 24C27 27 19 34 14 44C8 55 6 69 7 84C8 108 4 127 3 141C2 155 3 170 9 183C15 196 26 202 35 202C46 202 52 193 55 176C58 162 58 145 60 130C62 117 65 106 72 106C79 106 81 117 83 130C85 145 85 162 88 176C91 193 97 202 108 202C117 202 128 196 134 183C140 170 141 155 140 141C139 127 135 108 136 84C137 69 135 55 129 44C124 34 116 27 107 24C98 21 89 22 81 26C74 22 67 20 36 24Z" fill="#F0F0F0"/>
+    <path d="M18 45L55 77L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M34 202L55 77L88 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M18 45L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L81 26L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L81 26L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M102 47L129 44L140 84L136 141L88 202L102 47Z" fill="#EFEFEF" opacity="0.95"/>
+    <path d="M18 45L34 202L24 202C15 202 7 196 3 183C-3 170 -2 155 -1 141L18 45Z" fill="#E8E8E8" opacity="0.95"/>
+    <path d="M81 26C89 22 98 21 107 24C116 27 124 34 129 44L102 47L81 26Z" fill="#F4F4F4"/>
+  </g>
+
+  <!-- Right tooth -->
+  <g transform="translate(455 50)">
+    <path d="M36 24C27 27 19 34 14 44C8 55 6 69 7 84C8 108 4 127 3 141C2 155 3 170 9 183C15 196 26 202 35 202C46 202 52 193 55 176C58 162 58 145 60 130C62 117 65 106 72 106C79 106 81 117 83 130C85 145 85 162 88 176C91 193 97 202 108 202C117 202 128 196 134 183C140 170 141 155 140 141C139 127 135 108 136 84C137 69 135 55 129 44C124 34 116 27 107 24C98 21 89 22 81 26C74 22 67 20 36 24Z" fill="#D9D9D9"/>
+    <path d="M18 45L55 77L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M34 202L55 77L88 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M18 45L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L81 26L102 47" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M55 77L81 26L34 202" stroke="url(#goldLine)" stroke-width="2.5" opacity="0.95"/>
+    <path d="M102 47L129 44L140 84L136 141L88 202L102 47Z" fill="#B7B7B7" opacity="0.9"/>
+    <path d="M18 45L34 202L24 202C15 202 7 196 3 183C-3 170 -2 155 -1 141L18 45Z" fill="#8E8E8E" opacity="0.95"/>
+    <path d="M81 26C89 22 98 21 107 24C116 27 124 34 129 44L102 47L81 26Z" fill="#D6D6D6"/>
+  </g>
+
+  <text x="400" y="286" text-anchor="middle" fill="#272727" font-family="Arial, Helvetica, sans-serif" font-size="74" letter-spacing="12">EVOLUTION</text>
+  <text x="400" y="330" text-anchor="middle" fill="#272727" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="6">CLÍNICA DENTAL </text>
+  <text x="533" y="330" fill="#D89A00" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="6">TRUCIOS</text>
+</svg>

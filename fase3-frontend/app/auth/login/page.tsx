@@ -1,9 +1,10 @@
 "use client";
 // app/auth/login/page.tsx
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ActivitySquare, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,99 +35,79 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-slate-900 p-10 text-white">
-        <div className="flex items-center gap-3">
-          <ActivitySquare className="h-8 w-8 text-ev-gold" />
-          <span className="text-xl font-semibold tracking-tight">Kardex Evolution</span>
-        </div>
-        <div>
-          <blockquote className="text-2xl font-light leading-relaxed text-slate-300 max-w-md">
-            "Control de inventario hospitalario con trazabilidad completa, FEFO automatizado y alertas en tiempo real."
-          </blockquote>
-          <div className="mt-8 grid grid-cols-3 gap-4">
-              {[
-              { label: "FEFO", desc: "Automático" },
-              { label: "Inventario", desc: "Controlado" },
-              { label: "Stock", desc: "Tiempo real" },
-            ].map(({ label, desc }) => (
-              <div key={label} className="rounded-lg bg-slate-800 p-4">
-                <p className="text-ev-gold font-bold text-lg">{label}</p>
-                <p className="text-slate-400 text-sm">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <p className="text-xs text-slate-600">Sistema de Inventario Clínico — Todos los derechos reservados</p>
-      </div>
-
-      {/* Right panel — form */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8">
-            <ActivitySquare className="h-6 w-6 text-ev-gold" />
-            <span className="font-semibold text-slate-900">Kardex Evolution</span>
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(230,167,0,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.10),_transparent_34%),linear-gradient(180deg,_rgba(2,6,23,0.94),_rgba(15,23,42,0.98))]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center px-4 py-8 sm:px-6">
+        <section className="w-full rounded-[1.75rem] border border-white/10 bg-slate-900/75 px-6 py-8 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur sm:px-10 sm:py-10">
+          <div className="mx-auto mb-8 flex w-fit max-w-full justify-center rounded-[1.25rem] bg-transparent px-0 py-0 shadow-none">
+            <Image
+              src="/truicios-logo.png"
+              alt="Truicios"
+              width={706}
+              height={339}
+              priority
+              className="h-auto w-auto max-w-[300px] object-contain sm:max-w-[340px]"
+            />
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900">Iniciar sesión</h2>
-          <p className="mt-1 text-sm text-slate-500">Ingresa con tus credenciales institucionales</p>
+          <div className="mx-auto max-w-[560px] text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Iniciar sesión</h2>
 
-          <form onSubmit={handleLogin} className="mt-8 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
-                placeholder="usuario@clinica.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Contraseña
-              </label>
-              <div className="relative">
+            <form onSubmit={handleLogin} className="mx-auto mt-8 space-y-5 text-left sm:max-w-[560px]">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-200">
+                  Correo electrónico
+                </label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
-                  placeholder="••••••••"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-ev-gold focus:ring-4 focus:ring-ev-gold/15"
+                  placeholder="usuario@clinica.com"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
-            </div>
 
-            {error && (
-              <p className="rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-700">
-                {error}
-              </p>
-            )}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-200">
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 pr-12 text-sm text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-ev-gold focus:ring-4 focus:ring-ev-gold/15"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-300"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors"
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {loading ? "Ingresando..." : "Ingresar"}
-            </button>
-          </form>
-        </div>
+              {error && (
+                <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-ev-gold px-4 py-3 text-sm font-semibold text-slate-950 shadow-[0_14px_30px_rgba(230,167,0,0.22)] transition hover:-translate-y-0.5 hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Ingresando..." : "Ingresar"}
+              </button>
+            </form>
+          </div>
+        </section>
       </div>
     </div>
   );
