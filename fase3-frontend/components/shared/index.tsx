@@ -123,12 +123,12 @@ export function PageHeader({ title, description, action }: {
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
         {description && <p className="text-sm text-slate-500 mt-0.5">{description}</p>}
       </div>
-      {action && <div>{action}</div>}
+      {action && <div className="w-full lg:w-auto">{action}</div>}
     </div>
   );
 }

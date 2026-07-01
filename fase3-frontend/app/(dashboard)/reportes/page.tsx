@@ -149,18 +149,18 @@ export default function ReportesPage() {
         <PageHeader
           title="Reportes de Movimientos"
           action={
-            <div className="flex gap-2">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <button
                 onClick={exportPdf}
                 disabled={!filteredMovements.length || exporting !== null}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors">
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors sm:w-auto">
                 <FileText className="h-4 w-4 text-red-500" />
                 {exporting === "pdf" ? "Generando..." : "Exportar PDF"}
               </button>
               <button
                 onClick={exportExcel}
                 disabled={!filteredMovements.length || exporting !== null}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors">
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors sm:w-auto">
                 <Table2 className="h-4 w-4 text-emerald-600" />
                 {exporting === "excel" ? "Generando..." : "Exportar Excel"}
               </button>
@@ -170,7 +170,7 @@ export default function ReportesPage() {
 
         {/* Filter bar */}
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {/* Period */}
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">
@@ -236,7 +236,7 @@ export default function ReportesPage() {
 
         {/* Summary cards */}
         {filteredMovements.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500 font-medium">Movimientos</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">{filteredMovements.length}</p>

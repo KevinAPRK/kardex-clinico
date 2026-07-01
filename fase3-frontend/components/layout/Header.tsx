@@ -81,7 +81,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           {bellMenuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+            <div className="absolute left-4 right-4 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:left-auto sm:right-0 sm:w-80 sm:max-w-[calc(100vw-2rem)]">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Notificaciones</p>
@@ -92,7 +92,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 </span>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
                 {alerts?.length ? (
                   alerts.slice(0, 5).map((alert) => {
                     const expired = alert.nearest_expiry
