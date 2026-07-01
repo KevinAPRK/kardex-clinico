@@ -1,28 +1,38 @@
 // middleware.ts
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+async function getUserFromToken(token: string | null) {
+  if (!token || !SUPABASE_URL) return null;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return body?.user ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  // Try to find the access token in cookies. Common cookie names used by Supabase
+  // include 'sb-access-token' or '<prefix>-auth-token'. We try a few patterns.
+  const allCookies = request.cookies.getAll ? request.cookies.getAll() : [];
+  const tokenCookie =
+    allCookies.find((c) => c.name === "sb-access-token") ||
+    allCookies.find((c) => c.name === "supabase-auth-token") ||
+    allCookies.find((c) => c.name.endsWith("-auth-token"));
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const token = tokenCookie?.value ?? null;
+
+  const user = await getUserFromToken(token);
   const pathname = request.nextUrl.pathname;
 
   // Public routes
