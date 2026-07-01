@@ -81,7 +81,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           {bellMenuOpen && (
-            <div className="absolute left-4 right-4 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:left-auto sm:right-0 sm:w-80 sm:max-w-[calc(100vw-2rem)]">
+            <div className="fixed left-4 right-4 top-[7.5rem] z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:absolute sm:right-0 sm:left-auto sm:top-full sm:mt-2 sm:w-80 sm:max-w-[calc(100vw-2rem)]">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Notificaciones</p>
