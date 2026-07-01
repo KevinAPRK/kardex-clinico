@@ -330,12 +330,14 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
               <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)} />
             </FormField>
             <FormField label="Costo unitario" error={undefined}>
-              <input type="number" step="0.01" {...register("unit_cost")} className={iCls(false)} placeholder="S/ 0.00" />
-              {typeof latestUnitCost === "number" && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Autocompletado con el último costo de entrada del material.
-                </p>
-              )}
+              <input
+                type="number"
+                step="0.01"
+                readOnly
+                {...register("unit_cost")}
+                className={cn(iCls(false), "bg-slate-50 text-slate-700 cursor-not-allowed")}
+                placeholder="S/ 0.00"
+              />
             </FormField>
           </div>
 
