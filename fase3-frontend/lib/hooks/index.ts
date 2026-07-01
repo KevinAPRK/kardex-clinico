@@ -193,6 +193,27 @@ export function useMovements(filters?: {
   }, [key]);
 }
 
+export function useLatestMaterialUnitCost(materialId?: string) {
+  const db = createClient();
+  return useSupabaseQuery<number | null>(async () => {
+    if (!materialId) return null;
+
+    const { data, error } = await db
+      .from("movements")
+      .select("unit_cost")
+      .eq("material_id", materialId)
+      .eq("status", "confirmed")
+      .eq("type", "entry")
+      .not("unit_cost", "is", null)
+      .order("performed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.unit_cost ?? null;
+  }, [materialId]);
+}
+
 // ── KARDEX ───────────────────────────────────────────────────
 export function useKardex(materialId: string, from?: string, to?: string) {
   const db = createClient();

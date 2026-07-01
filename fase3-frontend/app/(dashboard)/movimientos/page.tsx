@@ -1,12 +1,12 @@
 "use client";
 // app/(dashboard)/movimientos/page.tsx
 // Llama Edge Functions. CERO lógica de negocio en este archivo.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
-import { useMaterials, useMovements, useEnvironments } from "@/lib/hooks";
+import { useMaterials, useMovements, useEnvironments, useLatestMaterialUnitCost } from "@/lib/hooks";
 import { entrySchema, exitSchema, adjustmentSchema, type EntryFormValues, type ExitFormValues, type AdjustmentFormValues } from "@/lib/validators";
 import { callEdgeFunction } from "@/lib/supabase/edge";
 import { formatDateTime } from "@/lib/utils";
@@ -283,9 +283,22 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ExitFormValues>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
   });
+
+  const selectedMaterialId = watch("material_id");
+  const { data: latestUnitCost } = useLatestMaterialUnitCost(selectedMaterialId);
+
+  useEffect(() => {
+    if (!selectedMaterialId) {
+      setValue("unit_cost", undefined);
+      return;
+    }
+    if (typeof latestUnitCost === "number") {
+      setValue("unit_cost", latestUnitCost);
+    }
+  }, [selectedMaterialId, latestUnitCost, setValue]);
 
   async function onSubmit(values: ExitFormValues) {
     setSaving(true);
@@ -318,6 +331,11 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
             </FormField>
             <FormField label="Costo unitario" error={undefined}>
               <input type="number" step="0.01" {...register("unit_cost")} className={iCls(false)} placeholder="S/ 0.00" />
+              {typeof latestUnitCost === "number" && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Autocompletado con el último costo de entrada del material.
+                </p>
+              )}
             </FormField>
           </div>
 
