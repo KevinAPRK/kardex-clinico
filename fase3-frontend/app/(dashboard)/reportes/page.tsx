@@ -85,6 +85,8 @@ export default function ReportesPage() {
     ).join("") ?? "";
 
     const html = `<!DOCTYPE html><html><head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
       <title>Reporte Kardex</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:11px;padding:20px}
@@ -106,9 +108,12 @@ export default function ReportesPage() {
       </table>
     </body></html>`;
 
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
+    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
     setExporting(null);
   }, [movements, period]);
 
