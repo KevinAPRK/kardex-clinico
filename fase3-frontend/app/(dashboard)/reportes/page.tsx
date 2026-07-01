@@ -4,7 +4,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
-import { useMaterials, useEnvironments, useMovements } from "@/lib/hooks";
+import { useMaterials, useEnvironments, useMovements, useMaterialCategories } from "@/lib/hooks";
 import { periodDates, formatDateTime, movementLabel } from "@/lib/utils";
 import { BarChart2, Download, FileText, Table2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,12 +16,14 @@ type TypeFilter = "all" | "entry" | "exit" | "adjustment";
 export default function ReportesPage() {
   const [period, setPeriod] = useState<Period>("month");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [materialFilter, setMaterialFilter] = useState("");
   const [environmentFilter, setEnvironmentFilter] = useState("");
   const [exporting, setExporting] = useState<"pdf" | "excel" | null>(null);
 
   const { data: materials } = useMaterials();
   const { data: environments } = useEnvironments();
+  const { data: categories } = useMaterialCategories();
 
   const dates = useMemo(() => periodDates(period), [period]);
   const { data: movements, loading } = useMovements({
@@ -33,18 +35,25 @@ export default function ReportesPage() {
     limit: 500,
   });
 
+  const filteredMovements = useMemo(() => {
+    if (!categoryFilter) return movements ?? [];
+    return (movements ?? []).filter(
+      (movement) => (movement.material as { category?: string | null } | undefined)?.category === categoryFilter
+    );
+  }, [movements, categoryFilter]);
+
   // ── Summary stats ────────────────────────────────────────
-  const totalEntries = movements?.filter((m) => m.type === "entry").reduce((s, m) => s + m.quantity, 0) ?? 0;
-  const totalExits   = movements?.filter((m) => m.type === "exit").reduce((s, m) => s + m.quantity, 0) ?? 0;
-  const totalValue   = movements?.reduce((s, m) => s + (m.unit_cost ?? 0) * m.quantity, 0) ?? 0;
+  const totalEntries = filteredMovements.filter((m) => m.type === "entry").reduce((s, m) => s + m.quantity, 0);
+  const totalExits   = filteredMovements.filter((m) => m.type === "exit").reduce((s, m) => s + m.quantity, 0);
+  const totalValue   = filteredMovements.reduce((s, m) => s + (m.unit_cost ?? 0) * m.quantity, 0);
 
   // ── Excel export via SheetJS ─────────────────────────────
   const exportExcel = useCallback(async () => {
-    if (!movements?.length) return;
+    if (!filteredMovements.length) return;
     setExporting("excel");
     try {
       const XLSX = await import("xlsx");
-      const rows = movements.map((m: Movement) => ({
+      const rows = filteredMovements.map((m: Movement) => ({
         "Fecha": formatDateTime(m.performed_at),
         "Tipo": movementLabel(m.type),
         "Material": (m.material as { name: string })?.name ?? "—",
@@ -65,13 +74,13 @@ export default function ReportesPage() {
     } finally {
       setExporting(null);
     }
-  }, [movements, period]);
+  }, [filteredMovements, period]);
 
   // ── PDF export via print ─────────────────────────────────
   const exportPdf = useCallback(() => {
     setExporting("pdf");
     // Open printable view in new tab — no backend needed
-    const content = movements?.map((m: Movement) =>
+    const content = filteredMovements.map((m: Movement) =>
       `<tr>
         <td>${formatDateTime(m.performed_at)}</td>
         <td>${movementLabel(m.type)}</td>
@@ -127,7 +136,7 @@ export default function ReportesPage() {
       printWindow.focus();
     }
     setExporting(null);
-  }, [movements, period]);
+  }, [filteredMovements, period]);
 
   const periodLabels: Record<Period, string> = {
     week: "Última semana", month: "Último mes", quarter: "Último trimestre",
@@ -143,14 +152,14 @@ export default function ReportesPage() {
             <div className="flex gap-2">
               <button
                 onClick={exportPdf}
-                disabled={!movements?.length || exporting !== null}
+                disabled={!filteredMovements.length || exporting !== null}
                 className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors">
                 <FileText className="h-4 w-4 text-red-500" />
                 {exporting === "pdf" ? "Generando..." : "Exportar PDF"}
               </button>
               <button
                 onClick={exportExcel}
-                disabled={!movements?.length || exporting !== null}
+                disabled={!filteredMovements.length || exporting !== null}
                 className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors">
                 <Table2 className="h-4 w-4 text-emerald-600" />
                 {exporting === "excel" ? "Generando..." : "Exportar Excel"}
@@ -192,6 +201,17 @@ export default function ReportesPage() {
               </select>
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Categoría</label>
+              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none">
+                <option value="">Todas las categorías</option>
+                {(categories ?? []).filter((category) => category.is_active).map((category) => (
+                  <option key={category.id} value={category.name}>{category.name}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Material */}
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Material</label>
@@ -215,11 +235,11 @@ export default function ReportesPage() {
         </div>
 
         {/* Summary cards */}
-        {movements && movements.length > 0 && (
+        {filteredMovements.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500 font-medium">Movimientos</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{movements.length}</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{filteredMovements.length}</p>
               <p className="text-xs text-slate-400">{periodLabels[period]}</p>
             </div>
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 shadow-sm p-4">
@@ -240,16 +260,16 @@ export default function ReportesPage() {
           <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
             <BarChart2 className="h-4 w-4 text-slate-500" />
             <h3 className="text-sm font-semibold text-slate-900">
-              {movements?.length ?? 0} movimientos · {periodLabels[period]}
+              {filteredMovements.length} movimientos · {periodLabels[period]}
             </h3>
-            {movements?.length === 500 && (
+            {movements?.length === 500 && !categoryFilter && (
               <span className="ml-auto text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">
                 Mostrando máx. 500 — usa filtros para afinar
               </span>
             )}
           </div>
 
-          {loading ? <LoadingSpinner /> : !movements?.length ? (
+          {loading ? <LoadingSpinner /> : !filteredMovements.length ? (
             <EmptyState
               title="Sin datos"
               description="No hay movimientos para los filtros seleccionados."
@@ -271,7 +291,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {movements.map((mv: Movement) => (
+                  {filteredMovements.map((mv: Movement) => (
                     <tr key={mv.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3"><MovementBadge type={mv.type} /></td>
                       <td className="px-4 py-3">
