@@ -306,26 +306,26 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   return (
     <div className="max-w-xl">
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-5">
-          <ArrowDownRight className="h-5 w-5 text-blue-600" />
+          <div className="flex items-center gap-2 mb-5">
+          <ArrowDownRight className="h-5 w-5 text-ev-navy" />
           <h3 className="font-semibold text-slate-900">Registrar Salida</h3>
         </div>
 
         {/* FEFO preview */}
         {fefoQueue && fefoQueue.length > 0 && (
-          <div className="mb-4 rounded-lg border border-cyan-200 bg-cyan-50 p-3">
-            <p className="text-xs font-semibold text-cyan-700 mb-2 uppercase tracking-wide">Cola FEFO — lotes disponibles</p>
+          <div className="mb-4 rounded-lg border border-ev-gold/30 bg-ev-gold/10 p-3">
+            <p className="text-xs font-semibold text-ev-navy mb-2 uppercase tracking-wide">Cola FEFO — lotes disponibles</p>
             <div className="space-y-1">
               {fefoQueue.slice(0, 4).map((lot, i) => (
                 <div key={lot.lot_id} className="flex items-center justify-between text-xs">
-                  <span className="text-cyan-800">
+                  <span className="text-ev-navy">
                     {i + 1}. {lot.lot_number} — vence {lot.expiry_date}
                   </span>
-                  <span className="font-mono font-semibold text-cyan-900">{lot.available_qty}</span>
+                  <span className="font-mono font-semibold text-ev-navy">{lot.available_qty}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-[10px] text-cyan-600">El backend seleccionará el orden de consumo automáticamente.</p>
+            <p className="mt-2 text-[10px] text-ev-gold">El backend seleccionará el orden de consumo automáticamente.</p>
           </div>
         )}
 
@@ -479,6 +479,6 @@ function iCls(hasError: boolean) {
   return cn(
     "w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1",
     hasError ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-      : "border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+      : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
   );
 }

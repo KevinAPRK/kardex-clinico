@@ -81,17 +81,17 @@ export default function ProveedoresPage() {
           description={`${suppliers?.length ?? 0} proveedores activos`}
           action={
             <button onClick={openCreate}
-              className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors">
+              className="flex items-center gap-2 rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white hover:opacity-95 transition-colors">
               <Plus className="h-4 w-4" /> Nuevo Proveedor
             </button>
           }
         />
 
         {loading ? <LoadingSpinner /> : !suppliers?.length ? (
-          <EmptyState
+            <EmptyState
             title="Sin proveedores"
             description="Agrega el primer proveedor de insumos."
-            action={<button onClick={openCreate} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white">Agregar proveedor</button>}
+            action={<button onClick={openCreate} className="rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white">Agregar proveedor</button>}
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,8 +99,8 @@ export default function ProveedoresPage() {
               <div key={s.id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg bg-cyan-100 p-2">
-                      <Truck className="h-4 w-4 text-cyan-700" />
+                    <div className="rounded-lg bg-ev-gold/10 p-2">
+                      <Truck className="h-4 w-4 text-ev-navy" />
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900 text-sm">{s.name}</p>
@@ -164,11 +164,11 @@ export default function ProveedoresPage() {
                   <input
                     {...register(key)}
                     placeholder={placeholder}
-                    className={cn(
+                      className={cn(
                       "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
                       errors[key]
                         ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                        : "border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+                        : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
                     )}
                   />
                   {errors[key] && <p className="mt-1 text-xs text-red-600">{errors[key]?.message}</p>}
@@ -177,7 +177,7 @@ export default function ProveedoresPage() {
 
               <div className="pt-2 pb-6">
                 <button type="submit" disabled={saving}
-                  className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60 transition-colors">
+                  className="w-full rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors">
                   {saving ? "Guardando..." : editing ? "Actualizar" : "Crear Proveedor"}
                 </button>
               </div>

@@ -109,7 +109,7 @@ export default function MaterialesPage() {
           description={`${materials?.length ?? 0} materiales activos`}
           action={
             <button onClick={openCreate}
-              className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors">
+              className="flex items-center gap-2 rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white hover:opacity-95 transition-colors">
               <Plus className="h-4 w-4" /> Nuevo Material
             </button>
           }
@@ -122,7 +122,7 @@ export default function MaterialesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre..."
-            className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+            className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
           />
         </div>
 
@@ -134,7 +134,7 @@ export default function MaterialesPage() {
             <EmptyState
               title="Sin materiales"
               description="Crea el primer material del catálogo."
-              action={<button onClick={openCreate} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white">Crear material</button>}
+              action={<button onClick={openCreate} className="rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white">Crear material</button>}
             />
           ) : (
             <table className="w-full text-sm">
@@ -182,8 +182,8 @@ export default function MaterialesPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
           <div className="relative ml-auto flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-cyan-600" />
+                <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-ev-gold" />
                 <h3 className="font-semibold text-slate-900">
                   {editing ? "Editar Material" : "Nuevo Material"}
                 </h3>
@@ -244,7 +244,7 @@ export default function MaterialesPage() {
 
               <div className="pt-2 pb-6">
                 <button type="submit" disabled={saving}
-                  className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60 transition-colors">
+                  className="w-full rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors">
                   {saving ? "Guardando..." : editing ? "Actualizar Material" : "Crear Material"}
                 </button>
               </div>
@@ -271,6 +271,6 @@ function inputCls(hasError: boolean) {
     "w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1",
     hasError
       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-      : "border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+      : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
   );
 }

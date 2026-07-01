@@ -41,7 +41,7 @@ export default function KardexPage() {
               <select
                 value={selectedMaterialId}
                 onChange={(e) => setSelectedMaterialId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
               >
                 <option value="">— Seleccionar material —</option>
                 {materials?.map((m) => (
@@ -52,12 +52,12 @@ export default function KardexPage() {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Desde</label>
               <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" />
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Hasta</label>
               <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" />
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none" />
             </div>
           </div>
         </div>

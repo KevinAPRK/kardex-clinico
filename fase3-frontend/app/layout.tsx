@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kardex Clínico",
-  description: "Sistema de inventario hospitalario con trazabilidad FEFO",
+  title: "Kardex Evolution",
+  description: "Kardex Evolution — Sistema de inventario hospitalario con trazabilidad FEFO",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

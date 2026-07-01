@@ -4,6 +4,9 @@
 
 :root {
   color-scheme: light;
+  --ev-gold: #d4a43a;
+  --ev-navy: #0b1726;
+  --ev-dark: #0f1724;
 }
 
 html {

@@ -38,21 +38,21 @@ export default function LoginPage() {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-slate-900 p-10 text-white">
         <div className="flex items-center gap-3">
-          <ActivitySquare className="h-8 w-8 text-cyan-400" />
-          <span className="text-xl font-semibold tracking-tight">Kardex Clínico</span>
+          <ActivitySquare className="h-8 w-8 text-ev-gold" />
+          <span className="text-xl font-semibold tracking-tight">Kardex Evolution</span>
         </div>
         <div>
           <blockquote className="text-2xl font-light leading-relaxed text-slate-300 max-w-md">
             "Control de inventario hospitalario con trazabilidad completa, FEFO automatizado y alertas en tiempo real."
           </blockquote>
           <div className="mt-8 grid grid-cols-3 gap-4">
-            {[
+              {[
               { label: "FEFO", desc: "Automático" },
               { label: "Lotes", desc: "Trazables" },
               { label: "Stock", desc: "Tiempo real" },
             ].map(({ label, desc }) => (
               <div key={label} className="rounded-lg bg-slate-800 p-4">
-                <p className="text-cyan-400 font-bold text-lg">{label}</p>
+                <p className="text-ev-gold font-bold text-lg">{label}</p>
                 <p className="text-slate-400 text-sm">{desc}</p>
               </div>
             ))}
@@ -66,8 +66,8 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 mb-8">
-            <ActivitySquare className="h-6 w-6 text-cyan-600" />
-            <span className="font-semibold text-slate-900">Kardex Clínico</span>
+            <ActivitySquare className="h-6 w-6 text-ev-gold" />
+            <span className="font-semibold text-slate-900">Kardex Evolution</span>
           </div>
 
           <h2 className="text-2xl font-bold text-slate-900">Iniciar sesión</h2>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
                 placeholder="usuario@clinica.com"
               />
             </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
                   placeholder="••••••••"
                 />
                 <button
@@ -120,7 +120,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60 transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Ingresando..." : "Ingresar"}

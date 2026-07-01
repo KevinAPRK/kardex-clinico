@@ -54,10 +54,10 @@ export default function LotesPage() {
 
         {/* Filters */}
         <div className="flex gap-3 mb-4 flex-wrap">
-          <select
+            <select
             value={selectedMaterialId}
             onChange={(e) => setSelectedMaterialId(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
           >
             <option value="">Todos los materiales</option>
             {expiryMaterials.map((m) => (
@@ -71,7 +71,7 @@ export default function LotesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar nº de lote..."
-              className="rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
             />
           </div>
         </div>

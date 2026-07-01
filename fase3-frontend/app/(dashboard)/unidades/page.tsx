@@ -91,7 +91,7 @@ export default function UnidadesPage() {
           action={
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white hover:opacity-95 transition-colors"
             >
               <Plus className="h-4 w-4" /> Nueva Unidad
             </button>
@@ -99,11 +99,11 @@ export default function UnidadesPage() {
         />
 
         {loading ? <LoadingSpinner /> : !units?.length ? (
-          <EmptyState
+            <EmptyState
             title="Sin unidades"
             description="Agrega la primera unidad de medida para usarla en materiales."
             action={
-              <button onClick={openCreate} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white">
+              <button onClick={openCreate} className="rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white">
                 Crear unidad
               </button>
             }
@@ -114,8 +114,8 @@ export default function UnidadesPage() {
               <div key={unit.id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg bg-cyan-100 p-2">
-                      <Ruler className="h-4 w-4 text-cyan-700" />
+                    <div className="rounded-lg bg-ev-gold/10 p-2">
+                      <Ruler className="h-4 w-4 text-ev-navy" />
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900 text-sm">{unit.name}</p>
@@ -154,7 +154,7 @@ export default function UnidadesPage() {
           <div className="relative ml-auto flex h-full w-full max-w-sm flex-col bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <div className="flex items-center gap-2">
-                <Package2 className="h-5 w-5 text-cyan-600" />
+                <Package2 className="h-5 w-5 text-ev-gold" />
                 <h3 className="font-semibold text-slate-900">{editing ? "Editar Unidad" : "Nueva Unidad"}</h3>
               </div>
               <button onClick={() => setShowForm(false)}><X className="h-5 w-5 text-slate-400" /></button>
@@ -172,7 +172,7 @@ export default function UnidadesPage() {
                     "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
                     errors.name
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                      : "border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+                      : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
                   )}
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
@@ -182,7 +182,7 @@ export default function UnidadesPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60 transition-colors"
+                  className="w-full rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors"
                 >
                   {saving ? "Guardando..." : editing ? "Actualizar" : "Crear Unidad"}
                 </button>

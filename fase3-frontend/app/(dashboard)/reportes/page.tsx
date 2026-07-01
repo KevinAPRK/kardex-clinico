@@ -60,7 +60,7 @@ export default function ReportesPage() {
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
-      XLSX.writeFile(wb, `kardex-reporte-${period}-${new Date().toISOString().split("T")[0]}.xlsx`);
+      XLSX.writeFile(wb, `kardex-evolution-reporte-${period}-${new Date().toISOString().split("T")[0]}.xlsx`);
     } finally {
       setExporting(null);
     }
@@ -94,9 +94,9 @@ export default function ReportesPage() {
         @media print{button{display:none}}
       </style>
     </head><body>
-      <h1>Reporte de Movimientos — Kardex Clínico</h1>
+      <h1>Reporte de Movimientos — Kardex Evolution</h1>
       <p>Período: ${period === "week" ? "Última semana" : period === "month" ? "Último mes" : "Último trimestre"} · Generado: ${new Date().toLocaleString("es-PE")}</p>
-      <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#0891b2;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir / Guardar PDF</button>
+      <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#0b1726;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir / Guardar PDF</button>
       <table>
         <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Cantidad</th><th>Ambiente</th><th>Referencia</th></tr></thead>
         <tbody>${content}</tbody>
@@ -164,7 +164,7 @@ export default function ReportesPage() {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Tipo de movimiento</label>
               <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none">
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none">
                 <option value="all">Todos</option>
                 <option value="entry">Entradas</option>
                 <option value="exit">Salidas</option>
@@ -176,7 +176,7 @@ export default function ReportesPage() {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Material</label>
               <select value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none">
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none">
                 <option value="">Todos los materiales</option>
                 {materials?.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
@@ -186,7 +186,7 @@ export default function ReportesPage() {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Ambiente</label>
               <select value={environmentFilter} onChange={(e) => setEnvironmentFilter(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none">
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none">
                 <option value="">Todos los ambientes</option>
                 {environments?.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
               </select>

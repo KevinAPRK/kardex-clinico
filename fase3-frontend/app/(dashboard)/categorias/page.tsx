@@ -91,7 +91,7 @@ export default function CategoriasPage() {
           action={
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white hover:opacity-95 transition-colors"
             >
               <Tags className="h-4 w-4" /> Nueva Categoría
             </button>
@@ -105,7 +105,7 @@ export default function CategoriasPage() {
             action={
               <button
                 onClick={openCreate}
-                className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-ev-navy px-4 py-2 text-sm font-semibold text-white"
               >
                 Agregar categoría
               </button>
@@ -117,8 +117,8 @@ export default function CategoriasPage() {
               <div key={category.id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg bg-cyan-100 p-2">
-                      <FolderTree className="h-4 w-4 text-cyan-700" />
+                    <div className="rounded-lg bg-ev-gold/10 p-2">
+                      <FolderTree className="h-4 w-4 text-ev-navy" />
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900 text-sm">{category.name}</p>
@@ -174,7 +174,7 @@ export default function CategoriasPage() {
                     "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
                     errors.name
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                      : "border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+                      : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
                   )}
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
@@ -184,7 +184,7 @@ export default function CategoriasPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60 transition-colors"
+                  className="w-full rounded-lg bg-ev-navy px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60 transition-colors"
                 >
                   {saving ? "Guardando..." : editing ? "Actualizar" : "Crear Categoría"}
                 </button>

@@ -7,7 +7,15 @@ module.exports = {
     "./types/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        ev: {
+          gold: '#d4a43a',
+          navy: '#0b1726',
+          dark: '#0f1724',
+        },
+      },
+    },
   },
   plugins: [],
 };

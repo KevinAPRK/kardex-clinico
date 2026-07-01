@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 <TrendingDown className="h-4 w-4 text-red-500" />
                 <h3 className="text-sm font-semibold text-slate-900">Stock bajo mínimo</h3>
               </div>
-              <Link href="/materiales" className="text-xs text-cyan-600 hover:underline">
+              <Link href="/materiales" className="text-xs text-ev-gold hover:underline">
                 Ver materiales →
               </Link>
             </div>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
                 <Clock className="h-4 w-4 text-amber-500" />
                 <h3 className="text-sm font-semibold text-slate-900">Próximos a vencer</h3>
               </div>
-              <Link href="/lotes" className="text-xs text-cyan-600 hover:underline">
+              <Link href="/lotes" className="text-xs text-ev-gold hover:underline">
                 Ver lotes →
               </Link>
             </div>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
               <ArrowLeftRight className="h-4 w-4 text-slate-500" />
               <h3 className="text-sm font-semibold text-slate-900">Últimos movimientos</h3>
             </div>
-            <Link href="/movimientos" className="text-xs text-cyan-600 hover:underline">
+            <Link href="/movimientos" className="text-xs text-ev-gold hover:underline">
               Ver todos →
             </Link>
           </div>
