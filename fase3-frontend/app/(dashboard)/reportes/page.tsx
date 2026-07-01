@@ -98,6 +98,17 @@ export default function ReportesPage() {
         tr:nth-child(even){background:#f8fafc}
         @media print{button{display:none}}
       </style>
+      <script>
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            window.focus();
+            window.print();
+          }, 250);
+        });
+        window.addEventListener('afterprint', function () {
+          window.close();
+        });
+      </script>
     </head><body>
       <h1>Reporte de Movimientos — Kardex Evolution</h1>
       <p>Período: ${period === "week" ? "Última semana" : period === "month" ? "Último mes" : "Último trimestre"} · Generado: ${new Date().toLocaleString("es-PE")}</p>
@@ -108,11 +119,12 @@ export default function ReportesPage() {
       </table>
     </body></html>`;
 
-    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
+      printWindow.focus();
     }
     setExporting(null);
   }, [movements, period]);
