@@ -88,7 +88,7 @@ export interface Movement {
   performed_by: string;
   performed_at: string;
   // Joined
-  material?: { id: string; name: string; code: string; unit: MaterialUnit };
+  material?: { id: string; name: string; code: string; category?: string | null; unit: MaterialUnit };
   lot?: { id: string; lot_number: string; expiry_date: string } | null;
   environment?: { id: string; name: string } | null;
   performer?: { id: string; full_name: string };

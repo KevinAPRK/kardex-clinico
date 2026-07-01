@@ -49,11 +49,13 @@ export default function ReportesPage() {
         "Tipo": movementLabel(m.type),
         "Material": (m.material as { name: string })?.name ?? "—",
         "Código": (m.material as { code: string })?.code ?? "—",
+        "Categoría": (m.material as { category?: string | null })?.category ?? "—",
         "Cantidad": m.quantity,
         "Costo Unit.": m.unit_cost ?? 0,
         "Total": (m.unit_cost ?? 0) * m.quantity,
         "Ambiente": (m.environment as { name: string } | null)?.name ?? "—",
         "Referencia": m.reference ?? "—",
+        "Notas": m.notes ?? "—",
         "Realizado por": (m.performer as { full_name: string })?.full_name ?? "—",
       }));
       const ws = XLSX.utils.json_to_sheet(rows);
@@ -74,9 +76,11 @@ export default function ReportesPage() {
         <td>${formatDateTime(m.performed_at)}</td>
         <td>${movementLabel(m.type)}</td>
         <td>${(m.material as { name: string })?.name ?? "—"}</td>
+        <td>${(m.material as { category?: string | null })?.category ?? "—"}</td>
         <td>${m.quantity}</td>
         <td>${(m.environment as { name: string } | null)?.name ?? "—"}</td>
         <td>${m.reference ?? "—"}</td>
+        <td>${m.notes ?? "—"}</td>
       </tr>`
     ).join("") ?? "";
 
@@ -97,7 +101,7 @@ export default function ReportesPage() {
       <p>Período: ${period === "week" ? "Última semana" : period === "month" ? "Último mes" : "Último trimestre"} · Generado: ${new Date().toLocaleString("es-PE")}</p>
       <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#0b1726;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir / Guardar PDF</button>
       <table>
-        <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Cantidad</th><th>Ambiente</th><th>Referencia</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Categoría</th><th>Cantidad</th><th>Ambiente</th><th>Referencia</th><th>Notas</th></tr></thead>
         <tbody>${content}</tbody>
       </table>
     </body></html>`;
@@ -240,11 +244,13 @@ export default function ReportesPage() {
                   <tr>
                     <th className="px-4 py-3 text-left font-medium">Tipo</th>
                     <th className="px-4 py-3 text-left font-medium">Material</th>
+                    <th className="px-4 py-3 text-left font-medium">Categoría</th>
                     <th className="px-4 py-3 text-right font-medium">Cantidad</th>
                     <th className="px-4 py-3 text-right font-medium">Valor</th>
                     <th className="px-4 py-3 text-left font-medium">Ambiente</th>
                     <th className="px-4 py-3 text-left font-medium">Fecha</th>
                     <th className="px-4 py-3 text-left font-medium">Registrado por</th>
+                    <th className="px-4 py-3 text-left font-medium">Notas</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -256,6 +262,9 @@ export default function ReportesPage() {
                           <p className="font-medium text-slate-900">{(mv.material as { name: string })?.name ?? "—"}</p>
                           <p className="text-xs font-mono text-slate-400">{(mv.material as { code: string })?.code ?? ""}</p>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 text-xs">
+                        {(mv.material as { category?: string | null })?.category ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-right font-mono font-semibold text-slate-700">
                         {mv.quantity.toLocaleString("es-PE")}
@@ -271,6 +280,9 @@ export default function ReportesPage() {
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">
                         {(mv.performer as { full_name: string })?.full_name ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 text-xs max-w-[220px]">
+                        {mv.notes ?? "—"}
                       </td>
                     </tr>
                   ))}

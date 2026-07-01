@@ -172,7 +172,7 @@ export function useMovements(filters?: {
       .from("movements")
       .select(`
         id, type, quantity, unit_cost, reference, notes, status, performed_at,
-        material:materials(id, name, code, unit),
+        material:materials(id, name, code, category, unit),
         lot:lots(id, lot_number, expiry_date),
         environment:environments(id, name),
         performer:profiles!performed_by(id, full_name)
