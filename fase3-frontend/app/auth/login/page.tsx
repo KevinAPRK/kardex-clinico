@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div className="mt-8 grid grid-cols-3 gap-4">
               {[
               { label: "FEFO", desc: "Automático" },
-              { label: "Lotes", desc: "Trazables" },
+              { label: "Inventario", desc: "Controlado" },
               { label: "Stock", desc: "Tiempo real" },
             ].map(({ label, desc }) => (
               <div key={label} className="rounded-lg bg-slate-800 p-4">

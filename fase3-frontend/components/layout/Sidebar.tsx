@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Package, ArrowLeftRight, Archive,
+  LayoutDashboard, Package, ArrowLeftRight,
   ClipboardList, Truck, BarChart2, LogOut, ActivitySquare, Building2, Tags, Ruler,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,6 @@ const nav = [
   { href: "/categorias",   label: "Categorías",   icon: Tags },
   { href: "/unidades",     label: "Unidades",     icon: Ruler },
   { href: "/movimientos",  label: "Movimientos",  icon: ArrowLeftRight },
-  { href: "/lotes",        label: "Lotes",        icon: Archive },
   { href: "/kardex",       label: "Kardex",       icon: ClipboardList },
   { href: "/ambientes",    label: "Ambientes",    icon: Building2 },
   { href: "/proveedores",  label: "Proveedores",  icon: Truck },

@@ -107,15 +107,15 @@ export default function DashboardPage() {
                 <Clock className="h-4 w-4 text-amber-500" />
                 <h3 className="text-sm font-semibold text-slate-900">Próximos a vencer</h3>
               </div>
-              <Link href="/lotes" className="text-xs text-ev-gold hover:underline">
-                Ver lotes →
+              <Link href="/reportes" className="text-xs text-ev-gold hover:underline">
+                Ver reportes →
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {alertsLoading ? (
                 <LoadingSpinner />
               ) : expiringAlerts.length === 0 ? (
-                <EmptyState title="Sin vencimientos próximos" description="No hay lotes que venzan en los próximos 30 días." />
+                <EmptyState title="Sin vencimientos próximos" description="No hay materiales que venzan en los próximos 30 días." />
               ) : (
                 expiringAlerts.slice(0, 5).map((alert: StockAlert) => {
                   const status = alert.nearest_expiry

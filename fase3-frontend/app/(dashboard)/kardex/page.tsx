@@ -103,7 +103,6 @@ export default function KardexPage() {
                       <tr>
                         <th className="px-4 py-3 text-left font-medium">Fecha / Hora</th>
                         <th className="px-4 py-3 text-left font-medium">Tipo</th>
-                        <th className="px-4 py-3 text-left font-medium">Lote</th>
                         <th className="px-4 py-3 text-left font-medium">Ambiente</th>
                         <th className="px-4 py-3 text-right font-medium text-emerald-700">Entrada</th>
                         <th className="px-4 py-3 text-right font-medium text-blue-700">Salida</th>
@@ -123,9 +122,6 @@ export default function KardexPage() {
                             </td>
                             <td className="px-4 py-3">
                               <MovementBadge type={row.type} />
-                            </td>
-                            <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                              {row.lot_number ?? "—"}
                             </td>
                             <td className="px-4 py-3 text-slate-500 text-xs">
                               {row.environment ?? "—"}

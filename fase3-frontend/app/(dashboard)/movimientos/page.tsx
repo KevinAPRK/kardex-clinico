@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
-import { useMaterials, useMovements, useEnvironments, useLotsByMaterial } from "@/lib/hooks";
+import { useMaterials, useMovements, useEnvironments } from "@/lib/hooks";
 import { entrySchema, exitSchema, adjustmentSchema, type EntryFormValues, type ExitFormValues, type AdjustmentFormValues } from "@/lib/validators";
 import { callEdgeFunction } from "@/lib/supabase/edge";
 import { formatDateTime } from "@/lib/utils";
@@ -141,7 +141,6 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
               <tr>
                 <th className="px-5 py-3 text-left font-medium">Tipo</th>
                 <th className="px-5 py-3 text-left font-medium">Material</th>
-                <th className="px-5 py-3 text-left font-medium">Lote</th>
                 <th className="px-5 py-3 text-right font-medium">Cantidad</th>
                 <th className="px-5 py-3 text-left font-medium">Servicio</th>
                 <th className="px-5 py-3 text-left font-medium">Referencia</th>
@@ -155,9 +154,6 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                   <td className="px-5 py-3"><MovementBadge type={mv.type} /></td>
                   <td className="px-5 py-3 font-medium text-slate-900">
                     {(mv.material as { name: string })?.name ?? "—"}
-                  </td>
-                  <td className="px-5 py-3 font-mono text-xs text-slate-500">
-                    {(mv.lot as { lot_number: string } | null)?.lot_number ?? "—"}
                   </td>
                   <td className="px-5 py-3 text-right font-mono font-semibold text-slate-700">
                     {mv.quantity.toLocaleString("es-PE")}
@@ -287,12 +283,9 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<ExitFormValues>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
   });
-
-  const selectedMaterialId = watch("material_id");
-  const { data: fefoQueue } = useLotsByMaterial(selectedMaterialId ?? "");
 
   async function onSubmit(values: ExitFormValues) {
     setSaving(true);
@@ -300,7 +293,7 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
     setSaving(false);
     if (error) { onError(error); return; }
     reset();
-    onSuccess("✅ Salida registrada. FEFO aplicado automáticamente.");
+    onSuccess("✅ Salida registrada correctamente.");
   }
 
   return (
@@ -310,24 +303,6 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
           <ArrowDownRight className="h-5 w-5 text-ev-navy" />
           <h3 className="font-semibold text-slate-900">Registrar Salida</h3>
         </div>
-
-        {/* FEFO preview */}
-        {fefoQueue && fefoQueue.length > 0 && (
-          <div className="mb-4 rounded-lg border border-ev-gold/30 bg-ev-gold/10 p-3">
-            <p className="text-xs font-semibold text-ev-navy mb-2 uppercase tracking-wide">Cola FEFO — lotes disponibles</p>
-            <div className="space-y-1">
-              {fefoQueue.slice(0, 4).map((lot, i) => (
-                <div key={lot.lot_id} className="flex items-center justify-between text-xs">
-                  <span className="text-ev-navy">
-                    {i + 1}. {lot.lot_number} — vence {lot.expiry_date}
-                  </span>
-                  <span className="font-mono font-semibold text-ev-navy">{lot.available_qty}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[10px] text-ev-gold">El backend seleccionará el orden de consumo automáticamente.</p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField label="Material *" error={errors.material_id?.message}>
@@ -384,8 +359,6 @@ function AjusteForm({ materials, onSuccess, onError }: {
   });
 
   const sign = watch("sign");
-  const selectedMaterialId = watch("material_id");
-  const { data: fefoQueue } = useLotsByMaterial(selectedMaterialId ?? "");
 
   async function onSubmit(values: AdjustmentFormValues) {
     setSaving(true);
@@ -412,19 +385,6 @@ function AjusteForm({ materials, onSuccess, onError }: {
               {materials.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.code})</option>)}
             </select>
           </FormField>
-
-          {fefoQueue && fefoQueue.length > 0 && (
-            <FormField label="Lote (requerido si el material tiene vencimiento)" error={errors.lot_id?.message}>
-              <select {...register("lot_id")} className={iCls(!!errors.lot_id)}>
-                <option value="">— Seleccionar lote —</option>
-                {fefoQueue.map((l) => (
-                  <option key={l.lot_id} value={l.lot_id}>
-                    {l.lot_number} — vence {l.expiry_date} ({l.available_qty} disp.)
-                  </option>
-                ))}
-              </select>
-            </FormField>
-          )}
 
           {/* Sign toggle */}
           <div className="flex rounded-lg border border-slate-200 overflow-hidden">

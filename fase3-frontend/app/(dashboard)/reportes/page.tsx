@@ -49,7 +49,6 @@ export default function ReportesPage() {
         "Tipo": movementLabel(m.type),
         "Material": (m.material as { name: string })?.name ?? "—",
         "Código": (m.material as { code: string })?.code ?? "—",
-        "Lote": (m.lot as { lot_number: string } | null)?.lot_number ?? "—",
         "Cantidad": m.quantity,
         "Costo Unit.": m.unit_cost ?? 0,
         "Total": (m.unit_cost ?? 0) * m.quantity,
@@ -241,7 +240,6 @@ export default function ReportesPage() {
                   <tr>
                     <th className="px-4 py-3 text-left font-medium">Tipo</th>
                     <th className="px-4 py-3 text-left font-medium">Material</th>
-                    <th className="px-4 py-3 text-left font-medium">Lote</th>
                     <th className="px-4 py-3 text-right font-medium">Cantidad</th>
                     <th className="px-4 py-3 text-right font-medium">Valor</th>
                     <th className="px-4 py-3 text-left font-medium">Ambiente</th>
@@ -258,9 +256,6 @@ export default function ReportesPage() {
                           <p className="font-medium text-slate-900">{(mv.material as { name: string })?.name ?? "—"}</p>
                           <p className="text-xs font-mono text-slate-400">{(mv.material as { code: string })?.code ?? ""}</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                        {(mv.lot as { lot_number: string } | null)?.lot_number ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-right font-mono font-semibold text-slate-700">
                         {mv.quantity.toLocaleString("es-PE")}
