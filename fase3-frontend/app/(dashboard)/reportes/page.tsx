@@ -1,7 +1,7 @@
 "use client";
 // app/(dashboard)/reportes/page.tsx
 // Datos desde vistas Supabase. Export PDF + Excel client-side.
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
 import { useMaterials, useEnvironments, useMovements } from "@/lib/hooks";
@@ -23,7 +23,7 @@ export default function ReportesPage() {
   const { data: materials } = useMaterials();
   const { data: environments } = useEnvironments();
 
-  const dates = periodDates(period);
+  const dates = useMemo(() => periodDates(period), [period]);
   const { data: movements, loading } = useMovements({
     type: typeFilter !== "all" ? typeFilter : undefined,
     material_id: materialFilter || undefined,
