@@ -1,0 +1,20 @@
+# supabase/config.toml — configuración FASE 2
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+
+[functions.register-entry]
+verify_jwt = true
+
+[functions.register-exit]
+verify_jwt = true
+
+[functions.register-adjustment]
+verify_jwt = true
+
+[functions.expiry-scanner]
+verify_jwt = false  # invocada por el scheduler interno con service_role key
+schedule = "0 7 * * *"  # 07:00 UTC diario
