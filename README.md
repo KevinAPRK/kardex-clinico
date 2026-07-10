@@ -43,6 +43,12 @@ Si quieres entrar rápido al sistema, usa estas credenciales de demo:
 - Contraseña: Demo1234!
 - Rol: admin
 
+También puedes usar este segundo usuario administrador:
+
+- Email: admin@evolution.com
+- Contraseña: admin123
+- Rol: admin
+
 Para habilitarlo en tu proyecto de Supabase:
 
 1. Crea el usuario en Auth con ese email y contraseña.

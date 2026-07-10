@@ -8,3 +8,10 @@ FROM profiles p
 JOIN auth.users u ON u.id = p.id
 WHERE u.email = 'demo@clinica.com'
 ON CONFLICT (profile_id, role) DO NOTHING;
+
+INSERT INTO profile_roles (profile_id, role)
+SELECT p.id, 'admin'::user_role
+FROM profiles p
+JOIN auth.users u ON u.id = p.id
+WHERE u.email = 'admin@evolution.com'
+ON CONFLICT (profile_id, role) DO NOTHING;
