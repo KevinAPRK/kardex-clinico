@@ -28,11 +28,11 @@ Deno.serve(async (req: Request) => {
     return errorResponse("JSON inválido", "BAD_REQUEST");
   }
 
-  const { material_id, lot_id, quantity, sign, reference, notes } = payload;
+  const { material_id, lot_id, quantity, sign, reference, notes, performed_at } = payload;
 
-  if (!material_id || !quantity || quantity <= 0 || !sign || !reference?.trim() || !notes?.trim()) {
+  if (!material_id || !quantity || quantity <= 0 || !sign || !notes?.trim()) {
     return errorResponse(
-      "material_id, quantity > 0, sign, reference y notes son requeridos",
+      "material_id, quantity > 0, sign y notes son requeridos",
       "VALIDATION_ERROR"
     );
   }
@@ -46,9 +46,10 @@ Deno.serve(async (req: Request) => {
       p_lot_id:       lot_id ?? null,
       p_quantity:     quantity,
       p_sign:         sign,
-      p_reference:    reference,
+      p_reference:    reference ?? null,
       p_notes:        notes,
       p_performed_by: session.userId,
+      p_performed_at: performed_at ?? null,
     });
 
     if (error) {
@@ -70,7 +71,7 @@ Deno.serve(async (req: Request) => {
         lot_id: lot_id ?? null,
         quantity,
         sign,
-        performed_at: new Date().toISOString(),
+        performed_at: performed_at ?? new Date().toISOString(),
       },
     }, 201);
 

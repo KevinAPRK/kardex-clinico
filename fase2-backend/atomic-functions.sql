@@ -27,6 +27,7 @@ CREATE OR REPLACE FUNCTION process_entry_atomic(
   p_notes           TEXT           DEFAULT NULL,
   p_environment_id  UUID           DEFAULT NULL,
   p_performed_by    UUID           DEFAULT NULL,
+  p_performed_at    TIMESTAMPTZ    DEFAULT NULL,
   -- Datos de lote (NULL si material no requiere vencimiento)
   p_lot_number      TEXT           DEFAULT NULL,
   p_expiry_date     DATE           DEFAULT NULL,
@@ -38,7 +39,7 @@ LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_lot_id      UUID;
   v_movement_id UUID;
-  v_timestamp   TIMESTAMPTZ := NOW();
+  v_timestamp   TIMESTAMPTZ := COALESCE(p_performed_at, NOW());
 BEGIN
   -- Advisory lock: serializa operaciones sobre el mismo material.
   -- Se libera automáticamente al final de la transacción.
@@ -76,6 +77,8 @@ $$;
 -- FEFO multi-lote completo + inserción atómica de movimientos.
 -- Devuelve SETOF rows: una por cada lote consumido.
 -- ============================================================
+DROP FUNCTION IF EXISTS process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC);
+DROP FUNCTION IF EXISTS process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC, TIMESTAMPTZ);
 DROP TYPE IF EXISTS exit_allocation CASCADE;
 CREATE TYPE exit_allocation AS (
   movement_id  UUID,
@@ -92,7 +95,8 @@ CREATE OR REPLACE FUNCTION process_exit_atomic(
   p_performed_by   UUID,
   p_reference      TEXT    DEFAULT NULL,
   p_notes          TEXT    DEFAULT NULL,
-  p_unit_cost      NUMERIC DEFAULT NULL
+  p_unit_cost      NUMERIC DEFAULT NULL,
+  p_performed_at   TIMESTAMPTZ DEFAULT NULL
 )
 RETURNS SETOF exit_allocation
 LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -101,7 +105,7 @@ DECLARE
   v_remaining      NUMERIC := p_quantity;
   v_take           NUMERIC;
   v_movement_id    UUID;
-  v_timestamp      TIMESTAMPTZ := NOW();
+  v_timestamp      TIMESTAMPTZ := COALESCE(p_performed_at, NOW());
   v_lot            RECORD;
   v_result         exit_allocation;
 BEGIN
@@ -158,14 +162,17 @@ $$;
 -- process_adjustment_atomic
 -- Ajuste +/- con lock por material.
 -- ============================================================
+DROP FUNCTION IF EXISTS process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID);
+DROP FUNCTION IF EXISTS process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ);
 CREATE OR REPLACE FUNCTION process_adjustment_atomic(
   p_material_id  UUID,
   p_lot_id       UUID,
   p_quantity     NUMERIC,
   p_sign         TEXT,       -- 'positive' | 'negative'
-  p_reference    TEXT,
-  p_notes        TEXT,
-  p_performed_by UUID
+  p_reference    TEXT DEFAULT NULL,
+  p_notes        TEXT DEFAULT NULL,
+  p_performed_by UUID DEFAULT NULL,
+  p_performed_at TIMESTAMPTZ DEFAULT NULL
 )
 RETURNS TABLE(movement_id UUID, movement_type TEXT)
 LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -173,6 +180,7 @@ DECLARE
   v_movement_id  UUID;
   v_type         TEXT;
   v_stock        NUMERIC;
+  v_timestamp    TIMESTAMPTZ := COALESCE(p_performed_at, NOW());
 BEGIN
   PERFORM pg_advisory_xact_lock(material_lock_key(p_material_id));
 
@@ -199,7 +207,7 @@ BEGIN
     p_material_id, p_lot_id, NULL, v_type::movement_type, p_quantity,
     NULL, p_reference,
     '[AJUSTE ' || upper(p_sign) || '] ' || p_notes,
-    'confirmed', p_performed_by, NOW()
+    'confirmed', p_performed_by, v_timestamp
   )
   RETURNING id INTO v_movement_id;
 
@@ -212,9 +220,9 @@ $$;
 -- PERMISOS: solo service_role puede ejecutar estas funciones
 -- (las Edge Functions usan service_role key)
 -- ============================================================
-REVOKE ALL ON FUNCTION process_entry_atomic FROM PUBLIC;
-REVOKE ALL ON FUNCTION process_exit_atomic FROM PUBLIC;
-REVOKE ALL ON FUNCTION process_adjustment_atomic FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION process_entry_atomic TO service_role;
-GRANT EXECUTE ON FUNCTION process_exit_atomic TO service_role;
-GRANT EXECUTE ON FUNCTION process_adjustment_atomic TO service_role;
+REVOKE ALL ON FUNCTION process_entry_atomic(UUID, NUMERIC, NUMERIC, TEXT, TEXT, UUID, UUID, TIMESTAMPTZ, TEXT, DATE, DATE, UUID) FROM PUBLIC;
+REVOKE ALL ON FUNCTION process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC, TIMESTAMPTZ) FROM PUBLIC;
+REVOKE ALL ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION process_entry_atomic(UUID, NUMERIC, NUMERIC, TEXT, TEXT, UUID, UUID, TIMESTAMPTZ, TEXT, DATE, DATE, UUID) TO service_role;
+GRANT EXECUTE ON FUNCTION process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC, TIMESTAMPTZ) TO service_role;
+GRANT EXECUTE ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ) TO service_role;

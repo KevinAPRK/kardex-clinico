@@ -112,6 +112,7 @@ export async function executeAtomicExit(
     reference?: string;
     notes?: string;
     unit_cost?: number;
+    performed_at?: string;
   }
 ): Promise<AtomicExitResult> {
   const { data, error } = await client.rpc("process_exit_atomic", {
@@ -122,6 +123,7 @@ export async function executeAtomicExit(
     p_reference:      params.reference ?? null,
     p_notes:          params.notes ?? null,
     p_unit_cost:      params.unit_cost ?? null,
+    p_performed_at:   params.performed_at ?? null,
   });
 
   if (error) {
@@ -171,6 +173,7 @@ export async function executeAtomicEntry(
     notes?: string;
     environment_id?: string;
     performed_by: string;
+    performed_at?: string;
     lot_number?: string;
     expiry_date?: string;
     manufacture_date?: string;
@@ -185,6 +188,7 @@ export async function executeAtomicEntry(
     p_notes:            params.notes ?? null,
     p_environment_id:   params.environment_id ?? null,
     p_performed_by:     params.performed_by,
+    p_performed_at:     params.performed_at ?? null,
     p_lot_number:       params.lot_number ?? null,
     p_expiry_date:      params.expiry_date ?? null,
     p_manufacture_date: params.manufacture_date ?? null,

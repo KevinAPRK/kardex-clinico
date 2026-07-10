@@ -38,7 +38,7 @@ Deno.serve(async (req: Request) => {
     return errorResponse("JSON inválido", "BAD_REQUEST");
   }
 
-  const { material_id, quantity, environment_id, reference, notes, unit_cost } = payload;
+  const { material_id, quantity, environment_id, reference, notes, unit_cost, performed_at } = payload;
 
   if (!material_id || !quantity || quantity <= 0 || !environment_id) {
     return errorResponse(
@@ -75,9 +75,10 @@ Deno.serve(async (req: Request) => {
       reference,
       notes,
       unit_cost,
+      performed_at,
     });
 
-    const performedAt = new Date().toISOString();
+    const performedAt = performed_at ?? new Date().toISOString();
 
     // ── Side effects async (post-TX, no afectan consistencia) ──
     const { data: profile } = await service

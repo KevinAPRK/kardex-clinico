@@ -3,7 +3,6 @@ import { z } from "zod";
 
 // ── Material ─────────────────────────────────────────────────
 export const materialSchema = z.object({
-  code: z.string().min(1, "Código requerido").max(50),
   name: z.string().min(2, "Nombre requerido").max(200),
   description: z.string().max(500).optional(),
   category: z.string().max(100).optional(),
@@ -30,9 +29,9 @@ export const entrySchema = z.object({
   material_id: z.string().uuid("Material requerido"),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   unit_cost: z.coerce.number().min(0).optional(),
-  reference: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
   environment_id: z.string().uuid().optional().nullable(),
+  performed_at: z.string().optional(),
   requires_lot: z.boolean(),
   lot_number: z.string().optional(),
   expiry_date: z.string().optional(),
@@ -55,9 +54,9 @@ export const exitSchema = z.object({
   material_id: z.string().uuid("Material requerido"),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   environment_id: z.string().uuid("Servicio requerido"),
-  reference: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
   unit_cost: z.coerce.number().min(0).optional(),
+  performed_at: z.string().optional(),
 });
 export type ExitFormValues = z.infer<typeof exitSchema>;
 
@@ -67,8 +66,8 @@ export const adjustmentSchema = z.object({
   lot_id: z.string().uuid().optional().nullable(),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   sign: z.enum(["positive", "negative"]),
-  reference: z.string().min(3, "Referencia requerida (min 3 caracteres)"),
   notes: z.string().min(5, "Detalle requerido (min 5 caracteres)"),
+  performed_at: z.string().optional(),
 });
 export type AdjustmentFormValues = z.infer<typeof adjustmentSchema>;
 

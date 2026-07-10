@@ -1,12 +1,12 @@
 "use client";
 // app/(dashboard)/dashboard/page.tsx
 import { Header } from "@/components/layout/Header";
-import { StatCard, MovementBadge, ExpiryBadge, LoadingSpinner, EmptyState } from "@/components/shared";
+import { StatCard, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
 import { useDashboardSummary, useStockAlerts, useMovements } from "@/lib/hooks";
-import { formatDateTime, formatQty, expiryStatus, daysUntilExpiry } from "@/lib/utils";
+import { formatDateTime, formatQty } from "@/lib/utils";
 import {
-  Package, AlertTriangle, ArrowLeftRight, TrendingDown,
-  Clock, ArrowUpRight, ArrowDownRight,
+  AlertTriangle, ArrowLeftRight, TrendingDown,
+  ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import Link from "next/link";
 import type { StockAlert } from "@/types";
@@ -17,7 +17,6 @@ export default function DashboardPage() {
   const { data: movements, loading: movementsLoading } = useMovements({ limit: 8 });
 
   const lowStockAlerts = alerts?.filter((a) => a.low_stock) ?? [];
-  const expiringAlerts = alerts?.filter((a) => a.expiring_soon) ?? [];
 
   return (
     <div>
@@ -31,20 +30,13 @@ export default function DashboardPage() {
         {summaryLoading ? (
           <LoadingSpinner text="Cargando resumen..." />
         ) : (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard
               label="Stock bajo mínimo"
               value={summary?.low_stock_count ?? 0}
               icon={AlertTriangle}
               iconColor="text-red-500"
               alert={(summary?.low_stock_count ?? 0) > 0}
-            />
-            <StatCard
-              label="Próximos a vencer"
-              value={summary?.expiring_soon_count ?? 0}
-              icon={Clock}
-              iconColor="text-amber-500"
-              alert={(summary?.expiring_soon_count ?? 0) > 0}
             />
             <StatCard
               label="Entradas (7 días)"
@@ -62,7 +54,7 @@ export default function DashboardPage() {
         )}
 
         {/* ── Alerts Grid ── */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-1">
           {/* Stock bajo */}
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
@@ -96,46 +88,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))
-              )}
-            </div>
-          </div>
-
-          {/* Próximos a vencer */}
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-500" />
-                <h3 className="text-sm font-semibold text-slate-900">Próximos a vencer</h3>
-              </div>
-              <Link href="/reportes" className="text-xs text-ev-gold hover:underline">
-                Ver reportes →
-              </Link>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {alertsLoading ? (
-                <LoadingSpinner />
-              ) : expiringAlerts.length === 0 ? (
-                <EmptyState title="Sin vencimientos próximos" description="No hay materiales que venzan en los próximos 30 días." />
-              ) : (
-                expiringAlerts.slice(0, 5).map((alert: StockAlert) => {
-                  const status = alert.nearest_expiry
-                    ? expiryStatus(alert.nearest_expiry)
-                    : "ok";
-                  const days = alert.nearest_expiry
-                    ? daysUntilExpiry(alert.nearest_expiry)
-                    : null;
-                  return (
-                    <div key={alert.material_id} className="flex items-center justify-between px-5 py-3">
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">{alert.material_name}</p>
-                        <p className="text-xs text-slate-500">
-                          {days !== null ? `${days} días para vencer` : "—"}
-                        </p>
-                      </div>
-                      <ExpiryBadge status={status} />
-                    </div>
-                  );
-                })
               )}
             </div>
           </div>

@@ -107,7 +107,6 @@ export default function KardexPage() {
                         <th className="px-4 py-3 text-right font-medium text-emerald-700">Entrada</th>
                         <th className="px-4 py-3 text-right font-medium text-blue-700">Salida</th>
                         <th className="px-4 py-3 text-right font-medium">Saldo</th>
-                        <th className="px-4 py-3 text-left font-medium">Referencia</th>
                         <th className="px-4 py-3 text-left font-medium">Registrado por</th>
                       </tr>
                     </thead>
@@ -158,7 +157,6 @@ export default function KardexPage() {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-xs text-slate-400">{row.reference ?? "—"}</td>
                             <td className="px-4 py-3 text-xs text-slate-500">{row.performed_by}</td>
                           </tr>
                         );

@@ -15,6 +15,17 @@ import { cn } from "@/lib/utils";
 
 type Tab = "historial" | "entrada" | "salida" | "ajuste";
 
+function todayDateValue() {
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
+function dateValueToIso(value?: string) {
+  if (!value) return new Date().toISOString();
+  return new Date(`${value}T00:00:00`).toISOString();
+}
+
 export default function MovimientosPage() {
   const [activeTab, setActiveTab] = useState<Tab>("historial");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -143,7 +154,6 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                 <th className="px-5 py-3 text-left font-medium">Material</th>
                 <th className="px-5 py-3 text-right font-medium">Cantidad</th>
                 <th className="px-5 py-3 text-left font-medium">Servicio</th>
-                <th className="px-5 py-3 text-left font-medium">Referencia</th>
                 <th className="px-5 py-3 text-left font-medium">Realizado por</th>
                 <th className="px-5 py-3 text-left font-medium">Fecha</th>
               </tr>
@@ -161,7 +171,6 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                   <td className="px-5 py-3 text-slate-500">
                     {(mv.environment as { name: string } | null)?.name ?? "—"}
                   </td>
-                  <td className="px-5 py-3 text-slate-400 text-xs">{mv.reference ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-500 text-xs">
                     {(mv.performer as { full_name: string })?.full_name ?? "—"}
                   </td>
@@ -186,7 +195,7 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<EntryFormValues>({
     resolver: zodResolver(entrySchema),
-    defaultValues: { requires_lot: false },
+    defaultValues: { requires_lot: false, performed_at: todayDateValue() },
   });
 
   const selectedMaterialId = watch("material_id");
@@ -206,15 +215,15 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
       material_id: values.material_id,
       quantity: values.quantity,
       unit_cost: values.unit_cost,
-      reference: values.reference,
       notes: values.notes,
       environment_id: values.environment_id || undefined,
+      performed_at: dateValueToIso(values.performed_at),
       lot: undefined,
     };
     const { error } = await callEdgeFunction("register-entry", payload as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
-    reset();
+    reset({ requires_lot: false, performed_at: todayDateValue() });
     onSuccess(`✅ Entrada registrada correctamente.`);
   }
 
@@ -257,8 +266,8 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
             </select>
           </FormField>
 
-          <FormField label="Referencia (O/C, guía, etc.)" error={undefined}>
-            <input {...register("reference")} className={iCls(false)} placeholder="OC-2024-001" />
+          <FormField label="Fecha del movimiento" error={undefined}>
+            <input type="date" {...register("performed_at")} className={iCls(false)} />
           </FormField>
 
           <FormField label="Notas" error={undefined}>
@@ -285,6 +294,7 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
+    defaultValues: { performed_at: todayDateValue() },
   });
 
   const selectedMaterialId = watch("material_id");
@@ -302,10 +312,13 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
 
   async function onSubmit(values: ExitFormValues) {
     setSaving(true);
-    const { error } = await callEdgeFunction("register-exit", values as unknown as Record<string, unknown>);
+    const { error } = await callEdgeFunction("register-exit", {
+      ...values,
+      performed_at: dateValueToIso(values.performed_at),
+    } as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
-    reset();
+    reset({ performed_at: todayDateValue() });
     onSuccess("✅ Salida registrada correctamente.");
   }
 
@@ -348,8 +361,8 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
             </select>
           </FormField>
 
-          <FormField label="Referencia (receta, orden)" error={undefined}>
-            <input {...register("reference")} className={iCls(false)} placeholder="REC-2024-001" />
+          <FormField label="Fecha del movimiento" error={undefined}>
+            <input type="date" {...register("performed_at")} className={iCls(false)} />
           </FormField>
 
           <FormField label="Notas" error={undefined}>
@@ -375,17 +388,20 @@ function AjusteForm({ materials, onSuccess, onError }: {
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<AdjustmentFormValues>({
     resolver: zodResolver(adjustmentSchema),
-    defaultValues: { sign: "positive" },
+    defaultValues: { sign: "positive", performed_at: todayDateValue() },
   });
 
   const sign = watch("sign");
 
   async function onSubmit(values: AdjustmentFormValues) {
     setSaving(true);
-    const { error } = await callEdgeFunction("register-adjustment", values as unknown as Record<string, unknown>);
+    const { error } = await callEdgeFunction("register-adjustment", {
+      ...values,
+      performed_at: dateValueToIso(values.performed_at),
+    } as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
-    reset();
+    reset({ sign: "positive", performed_at: todayDateValue() });
     onSuccess("✅ Ajuste registrado correctamente.");
   }
 
@@ -426,8 +442,8 @@ function AjusteForm({ materials, onSuccess, onError }: {
             <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)} />
           </FormField>
 
-          <FormField label="Referencia *" error={errors.reference?.message}>
-            <input {...register("reference")} className={iCls(!!errors.reference)} placeholder="AUDIT-2024-001" />
+          <FormField label="Fecha del movimiento" error={undefined}>
+            <input type="date" {...register("performed_at")} className={iCls(false)} />
           </FormField>
 
           <FormField label="Detalle del ajuste *" error={errors.notes?.message}>

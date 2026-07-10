@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
     return errorResponse("JSON inválido", "BAD_REQUEST");
   }
 
-  const { material_id, quantity, unit_cost, reference, notes, environment_id } = payload;
+  const { material_id, quantity, unit_cost, reference, notes, environment_id, performed_at } = payload;
 
   if (!material_id || !quantity || quantity <= 0) {
     return errorResponse("material_id y quantity > 0 son requeridos", "VALIDATION_ERROR");
@@ -52,6 +52,7 @@ Deno.serve(async (req: Request) => {
       reference,
       notes,
       environment_id,
+      performed_at,
       performed_by: session.userId,
       lot_number:       null,
       expiry_date:      null,
@@ -66,7 +67,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", session.userId)
       .single();
 
-    const performedAt = new Date().toISOString();
+    const performedAt = performed_at ?? new Date().toISOString();
 
     // Email confirmación
     sendEntryConfirmed({

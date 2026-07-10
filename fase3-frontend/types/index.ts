@@ -168,6 +168,7 @@ export interface RegisterEntryPayload {
   reference?: string;
   notes?: string;
   environment_id?: string;
+  performed_at?: string;
   lot?: {
     lot_number: string;
     expiry_date: string;
@@ -183,6 +184,7 @@ export interface RegisterExitPayload {
   reference?: string;
   notes?: string;
   unit_cost?: number;
+  performed_at?: string;
 }
 
 export interface RegisterAdjustmentPayload {
@@ -190,8 +192,8 @@ export interface RegisterAdjustmentPayload {
   lot_id?: string;
   quantity: number;
   sign: "positive" | "negative";
-  reference: string;
   notes: string;
+  performed_at?: string;
 }
 
 // ── UI helpers ───────────────────────────────────────────────

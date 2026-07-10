@@ -5,16 +5,39 @@ import { useState, useCallback, useMemo } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
 import { useMaterials, useEnvironments, useMovements, useMaterialCategories } from "@/lib/hooks";
-import { periodDates, formatDateTime, movementLabel } from "@/lib/utils";
-import { BarChart2, Download, FileText, Table2, Calendar } from "lucide-react";
+import { formatDate, formatDateTime, movementLabel } from "@/lib/utils";
+import { BarChart2, FileText, Table2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Movement } from "@/types";
 
-type Period = "week" | "month" | "quarter";
 type TypeFilter = "all" | "entry" | "exit" | "adjustment";
 
+function todayDateValue() {
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
+function daysAgoDateValue(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const offsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
+function dateValueToIsoStart(value?: string) {
+  if (!value) return undefined;
+  return new Date(`${value}T00:00:00`).toISOString();
+}
+
+function dateValueToIsoEnd(value?: string) {
+  if (!value) return undefined;
+  return new Date(`${value}T23:59:59.999`).toISOString();
+}
+
 export default function ReportesPage() {
-  const [period, setPeriod] = useState<Period>("month");
+  const [fromDate, setFromDate] = useState(() => daysAgoDateValue(30));
+  const [toDate, setToDate] = useState(() => todayDateValue());
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [materialFilter, setMaterialFilter] = useState("");
@@ -25,13 +48,22 @@ export default function ReportesPage() {
   const { data: environments } = useEnvironments();
   const { data: categories } = useMaterialCategories();
 
-  const dates = useMemo(() => periodDates(period), [period]);
+  const fromIso = dateValueToIsoStart(fromDate);
+  const toIso = dateValueToIsoEnd(toDate);
+  const rangeLabel = fromDate && toDate
+    ? `${formatDate(fromDate)} al ${formatDate(toDate)}`
+    : fromDate
+      ? `Desde ${formatDate(fromDate)}`
+      : toDate
+        ? `Hasta ${formatDate(toDate)}`
+        : "Sin rango";
+
   const { data: movements, loading } = useMovements({
     type: typeFilter !== "all" ? typeFilter : undefined,
     material_id: materialFilter || undefined,
     environment_id: environmentFilter || undefined,
-    from: dates.from,
-    to: dates.to,
+    from: fromIso,
+    to: toIso,
     limit: 500,
   });
 
@@ -63,18 +95,17 @@ export default function ReportesPage() {
         "Costo Unit.": m.unit_cost ?? 0,
         "Total": (m.unit_cost ?? 0) * m.quantity,
         "Ambiente": (m.environment as { name: string } | null)?.name ?? "—",
-        "Referencia": m.reference ?? "—",
         "Notas": m.notes ?? "—",
         "Realizado por": (m.performer as { full_name: string })?.full_name ?? "—",
       }));
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
-      XLSX.writeFile(wb, `kardex-evolution-reporte-${period}-${new Date().toISOString().split("T")[0]}.xlsx`);
+      XLSX.writeFile(wb, `kardex-evolution-reporte-${fromDate || "inicio"}-${toDate || "fin"}.xlsx`);
     } finally {
       setExporting(null);
     }
-  }, [filteredMovements, period]);
+  }, [filteredMovements, fromDate, toDate]);
 
   // ── PDF export via print ─────────────────────────────────
   const exportPdf = useCallback(() => {
@@ -88,7 +119,6 @@ export default function ReportesPage() {
         <td>${(m.material as { category?: string | null })?.category ?? "—"}</td>
         <td>${m.quantity}</td>
         <td>${(m.environment as { name: string } | null)?.name ?? "—"}</td>
-        <td>${m.reference ?? "—"}</td>
         <td>${m.notes ?? "—"}</td>
       </tr>`
     ).join("") ?? "";
@@ -120,10 +150,10 @@ export default function ReportesPage() {
       </script>
     </head><body>
       <h1>Reporte de Movimientos — Kardex Evolution</h1>
-      <p>Período: ${period === "week" ? "Última semana" : period === "month" ? "Último mes" : "Último trimestre"} · Generado: ${new Date().toLocaleString("es-PE")}</p>
+      <p>Rango: ${rangeLabel} · Generado: ${new Date().toLocaleString("es-PE")}</p>
       <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#0b1726;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir / Guardar PDF</button>
       <table>
-        <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Categoría</th><th>Cantidad</th><th>Ambiente</th><th>Referencia</th><th>Notas</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Categoría</th><th>Cantidad</th><th>Ambiente</th><th>Notas</th></tr></thead>
         <tbody>${content}</tbody>
       </table>
     </body></html>`;
@@ -136,11 +166,7 @@ export default function ReportesPage() {
       printWindow.focus();
     }
     setExporting(null);
-  }, [filteredMovements, period]);
-
-  const periodLabels: Record<Period, string> = {
-    week: "Última semana", month: "Último mes", quarter: "Último trimestre",
-  };
+  }, [filteredMovements, rangeLabel]);
 
   return (
     <div>
@@ -170,22 +196,25 @@ export default function ReportesPage() {
 
         {/* Filter bar */}
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {/* Period */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {/* Rango */}
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">
-                <Calendar className="inline h-3 w-3 mr-1" />Período
+                <Calendar className="inline h-3 w-3 mr-1" />Rango de fechas
               </label>
-              <div className="flex rounded-lg border border-slate-200 overflow-hidden">
-                {(["week", "month", "quarter"] as Period[]).map((p) => (
-                  <button key={p} onClick={() => setPeriod(p)}
-                    className={cn(
-                      "flex-1 py-1.5 text-xs font-medium transition-colors",
-                      period === p ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
-                    )}>
-                    {p === "week" ? "7d" : p === "month" ? "30d" : "90d"}
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
+                />
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
+                />
               </div>
             </div>
 
@@ -240,7 +269,7 @@ export default function ReportesPage() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500 font-medium">Movimientos</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">{filteredMovements.length}</p>
-              <p className="text-xs text-slate-400">{periodLabels[period]}</p>
+              <p className="text-xs text-slate-400">{rangeLabel}</p>
             </div>
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 shadow-sm p-4">
               <p className="text-xs uppercase tracking-wide text-emerald-600 font-medium">Total entradas</p>
@@ -260,7 +289,7 @@ export default function ReportesPage() {
           <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
             <BarChart2 className="h-4 w-4 text-slate-500" />
             <h3 className="text-sm font-semibold text-slate-900">
-              {filteredMovements.length} movimientos · {periodLabels[period]}
+              {filteredMovements.length} movimientos · {rangeLabel}
             </h3>
             {movements?.length === 500 && !categoryFilter && (
               <span className="ml-auto text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">

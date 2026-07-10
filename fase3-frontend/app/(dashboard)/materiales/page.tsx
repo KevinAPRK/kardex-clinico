@@ -46,7 +46,6 @@ export default function MaterialesPage() {
 
   function openEdit(material: Material) {
     reset({
-      code: material.code,
       name: material.name,
       description: material.description ?? "",
       category: material.category ?? "",
@@ -66,7 +65,7 @@ export default function MaterialesPage() {
     setFormError(null);
 
     const payload = {
-      code: values.code,
+      ...(editing ? {} : { code: generateMaterialCode(values.name) }),
       name: values.name,
       description: values.description || null,
       category: values.category || null,
@@ -83,9 +82,7 @@ export default function MaterialesPage() {
     setSaving(false);
 
     if (error) {
-      setFormError(error.message.includes("unique")
-        ? "Ya existe un material con ese código."
-        : error.message);
+      setFormError(error.message);
       return;
     }
 
@@ -197,11 +194,6 @@ export default function MaterialesPage() {
               {formError && <AlertBanner type="error" message={formError} />}
               {formSuccess && <AlertBanner type="success" message={formSuccess} />}
 
-              <Field label="Código *" error={errors.code?.message}>
-                <input {...register("code")} placeholder="MAT-001"
-                  className={inputCls(!!errors.code)} />
-              </Field>
-
               <Field label="Nombre *" error={errors.name?.message}>
                 <input {...register("name")} placeholder="Amoxicilina 500mg"
                   className={inputCls(!!errors.name)} />
@@ -273,4 +265,15 @@ function inputCls(hasError: boolean) {
       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
       : "border-slate-300 focus:border-ev-gold focus:ring-ev-gold"
   );
+}
+
+function generateMaterialCode(name: string) {
+  const base = name
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 20) || "MAT";
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `${base}-${suffix}`.slice(0, 50);
 }
