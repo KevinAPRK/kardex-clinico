@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type {
   Material, Supplier, Lot, Movement, Environment, MaterialCategory, MaterialUnitOption,
-  StockByMaterial, StockAlert, FefoQueueRow, KardexRow,
+  StockByMaterial, StockByLot, StockAlert, FefoQueueRow, KardexRow,
 } from "@/types";
 
 function useSupabaseQuery<T>(
@@ -117,6 +117,24 @@ export function useStockByMaterial() {
   }, []);
 }
 
+export function useStockByLot(materialId?: string) {
+  const db = createClient();
+  return useSupabaseQuery<StockByLot[]>(async () => {
+    let q = db
+      .from("stock_by_lot")
+      .select("*")
+      .gt("available_qty", 0)
+      .order("material_name")
+      .order("expiry_date", { ascending: true });
+
+    if (materialId) q = q.eq("material_id", materialId);
+
+    const { data, error } = await q;
+    if (error) throw error;
+    return data ?? [];
+  }, [materialId]);
+}
+
 export function useStockAlerts() {
   const db = createClient();
   return useSupabaseQuery<StockAlert[]>(async () => {
@@ -171,7 +189,7 @@ export function useMovements(filters?: {
     let q = db
       .from("movements")
       .select(`
-        id, type, quantity, unit_cost, reference, notes, status, performed_at,
+        id, material_id, type, quantity, unit_cost, reference, notes, status, performed_at,
         material:materials(id, name, code, category, unit),
         lot:lots(id, lot_number, expiry_date),
         environment:environments(id, name),

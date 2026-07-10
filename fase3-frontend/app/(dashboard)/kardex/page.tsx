@@ -4,8 +4,8 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
-import { useMaterials, useKardex } from "@/lib/hooks";
-import { formatDateTime } from "@/lib/utils";
+import { useMaterials, useKardex, useStockByMaterial } from "@/lib/hooks";
+import { formatDateTime, formatQty } from "@/lib/utils";
 import { ClipboardList, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { KardexRow } from "@/types";
@@ -17,6 +17,8 @@ export default function KardexPage() {
 
   const { data: materials } = useMaterials();
   const selectedMaterial = materials?.find((m) => m.id === selectedMaterialId);
+  const { data: stockByMaterial } = useStockByMaterial();
+  const currentStock = stockByMaterial?.find((item) => item.material_id === selectedMaterialId) ?? null;
   const { data: rows, loading } = useKardex(
     selectedMaterialId,
     from ? new Date(from).toISOString() : undefined,
@@ -78,10 +80,10 @@ export default function KardexPage() {
                 <SummaryCard label="Total entradas" value={totalIn.toLocaleString("es-PE")} sub={selectedMaterial?.unit} color="text-emerald-700" />
                 <SummaryCard label="Total salidas" value={totalOut.toLocaleString("es-PE")} sub={selectedMaterial?.unit} color="text-blue-700" />
                 <SummaryCard
-                  label="Saldo actual"
-                  value={currentBalance.toLocaleString("es-PE")}
+                  label="Saldo actual real"
+                  value={currentStock ? formatQty(currentStock.total_qty, currentStock.unit) : "—"}
                   sub={selectedMaterial?.unit}
-                  color={currentBalance <= (selectedMaterial?.min_stock ?? 0) ? "text-red-700" : "text-slate-900"}
+                  color={(currentStock?.total_qty ?? 0) <= (selectedMaterial?.min_stock ?? 0) ? "text-red-700" : "text-slate-900"}
                 />
               </div>
             )}
@@ -107,6 +109,7 @@ export default function KardexPage() {
                         <th className="px-4 py-3 text-right font-medium text-emerald-700">Entrada</th>
                         <th className="px-4 py-3 text-right font-medium text-blue-700">Salida</th>
                         <th className="px-4 py-3 text-right font-medium">Saldo</th>
+                        <th className="px-4 py-3 text-right font-medium">Saldo real</th>
                         <th className="px-4 py-3 text-left font-medium">Registrado por</th>
                       </tr>
                     </thead>
@@ -156,6 +159,9 @@ export default function KardexPage() {
                                   {row.running_total.toLocaleString("es-PE")}
                                 </span>
                               </div>
+                            </td>
+                            <td className="px-4 py-3 text-right text-xs text-slate-500">
+                              {currentStock ? formatQty(currentStock.total_qty, currentStock.unit) : "—"}
                             </td>
                             <td className="px-4 py-3 text-xs text-slate-500">{row.performed_by}</td>
                           </tr>

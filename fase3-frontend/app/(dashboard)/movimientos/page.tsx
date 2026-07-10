@@ -6,10 +6,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
-import { useMaterials, useMovements, useEnvironments, useLatestMaterialUnitCost } from "@/lib/hooks";
+import { useMaterials, useMovements, useEnvironments, useLatestMaterialUnitCost, useStockByMaterial } from "@/lib/hooks";
 import { entrySchema, exitSchema, adjustmentSchema, type EntryFormValues, type ExitFormValues, type AdjustmentFormValues } from "@/lib/validators";
 import { callEdgeFunction } from "@/lib/supabase/edge";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, formatQty } from "@/lib/utils";
 import { Plus, ArrowUpRight, ArrowDownRight, SlidersHorizontal, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,8 +22,19 @@ function todayDateValue() {
 }
 
 function dateValueToIso(value?: string) {
-  if (!value) return new Date().toISOString();
-  return new Date(`${value}T00:00:00`).toISOString();
+  const now = new Date();
+  if (!value) return now.toISOString();
+
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(
+    year,
+    month - 1,
+    day,
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds()
+  ).toISOString();
 }
 
 export default function MovimientosPage() {
@@ -119,6 +130,11 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
   typeFilter: string;
   setTypeFilter: (v: string) => void;
 }) {
+  const { data: stockByMaterial } = useStockByMaterial();
+  const stockMap = new Map<string, { total_qty: number; unit: string }>(
+    (stockByMaterial ?? []).map((item) => [item.material_id, { total_qty: item.total_qty, unit: item.unit }])
+  );
+
   const types = [
     { value: "all",        label: "Todos" },
     { value: "entry",      label: "Entradas" },
@@ -153,6 +169,7 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                 <th className="px-5 py-3 text-left font-medium">Tipo</th>
                 <th className="px-5 py-3 text-left font-medium">Material</th>
                 <th className="px-5 py-3 text-right font-medium">Cantidad</th>
+                <th className="px-5 py-3 text-right font-medium">Saldo real</th>
                 <th className="px-5 py-3 text-left font-medium">Servicio</th>
                 <th className="px-5 py-3 text-left font-medium">Realizado por</th>
                 <th className="px-5 py-3 text-left font-medium">Fecha</th>
@@ -167,6 +184,12 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                   </td>
                   <td className="px-5 py-3 text-right font-mono font-semibold text-slate-700">
                     {mv.quantity.toLocaleString("es-PE")}
+                  </td>
+                  <td className="px-5 py-3 text-right text-slate-500 text-xs">
+                    {(() => {
+                      const stock = stockMap.get(mv.material_id);
+                      return stock ? formatQty(stock.total_qty, stock.unit) : "—";
+                    })()}
                   </td>
                   <td className="px-5 py-3 text-slate-500">
                     {(mv.environment as { name: string } | null)?.name ?? "—"}
