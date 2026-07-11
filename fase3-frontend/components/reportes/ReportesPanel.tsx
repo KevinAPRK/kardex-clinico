@@ -172,6 +172,7 @@ export default function ReportesPanel() {
   const materialsMap = useMemo(() => new Map((materials ?? []).map((item) => [item.id, item])), [materials]);
   const suppliersMap = useMemo(() => new Map((suppliers ?? []).map((item) => [item.id, item])), [suppliers]);
   const lotsMap = useMemo(() => new Map((lots ?? []).map((item) => [item.id, item])), [lots]);
+  const environmentsMap = useMemo(() => new Map((environments ?? []).map((item) => [item.id, item])), [environments]);
   const stockTotalsMap = useMemo(
     () => new Map((stockByMaterial ?? []).map((item) => [item.material_id, item])),
     [stockByMaterial]
@@ -268,6 +269,7 @@ export default function ReportesPanel() {
     if (!materialFilter) return [];
     const material = materialsMap.get(materialFilter);
     const currentStock = stockTotalsMap.get(materialFilter);
+    const selectedEnvironmentName = environmentFilter ? environmentsMap.get(environmentFilter)?.name ?? null : null;
     return (kardexRows ?? []).map((row) => ({
       material_id: materialFilter,
       performed_at: row.performed_at,
@@ -284,8 +286,8 @@ export default function ReportesPanel() {
       performed_by: row.performed_by ?? "—",
       notes: row.reference ?? "—",
       lot_number: row.lot_number ?? "—",
-    }));
-  }, [kardexRows, materialFilter, materialsMap, stockTotalsMap]);
+    })).filter((row) => !selectedEnvironmentName || row.environment === selectedEnvironmentName);
+  }, [kardexRows, materialFilter, materialsMap, stockTotalsMap, environmentFilter, environmentsMap]);
 
   const consumptionRows = useMemo(() => {
     const grouped = new Map<string, {

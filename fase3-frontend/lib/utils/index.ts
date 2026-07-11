@@ -8,6 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(iso: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [year, month, day] = iso.split("-");
+    return `${day}/${month}/${year}`;
+  }
   return new Date(iso).toLocaleDateString("es-PE", {
     day: "2-digit", month: "2-digit", year: "numeric",
   });
