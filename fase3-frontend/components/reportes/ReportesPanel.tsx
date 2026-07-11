@@ -62,22 +62,22 @@ type ReportConfig = {
 const TEMPLATES: Record<ReportTemplateId, { label: string; description: string; defaultColumns: string[] }> = {
   "stock-actual": {
     label: "Stock actual",
-    description: "Consulta el stock actual por lote o por material y personaliza las columnas antes de descargar.",
-    defaultColumns: ["material_name", "material_code", "category", "unit", "stock_actual", "stock_total", "supplier", "lot_number"],
+    description: "Consulta el stock actual por material y elige las columnas antes de descargar",
+    defaultColumns: ["material_name", "material_code", "category", "unit", "stock_actual", "stock_total", "supplier"],
   },
   "kardex-movimientos": {
     label: "Kardex de movimientos",
-    description: "Vista cronológica del Kardex por material seleccionado.",
+    description: "Vista cronológica del Kardex por material seleccionado",
     defaultColumns: ["performed_at", "type", "material_name", "material_code", "quantity_in", "quantity_out", "running_total", "stock_actual", "environment", "performed_by"],
   },
   "consumo-material": {
     label: "Consumo por material",
-    description: "Resumen agrupado del consumo de materiales en el período seleccionado.",
+    description: "Resumen conjunto del consumo de materiales en el período seleccionado",
     defaultColumns: ["material_name", "category", "unit", "consumed_qty", "total_value", "stock_actual"],
   },
   "materiales-bajo-stock": {
     label: "Materiales bajo stock",
-    description: "Materiales que están por debajo del stock mínimo configurado.",
+    description: "Materiales que están por debajo del stock mínimo",
     defaultColumns: ["material_name", "category", "unit", "stock_actual", "min_stock", "difference"],
   },
 };

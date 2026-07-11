@@ -36,23 +36,22 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Usuario de prueba
-Si quieres entrar rápido al sistema, usa estas credenciales de demo:
+## Usuarios de prueba
+Si quieres entrar rápido al sistema, crea estos usuarios en Supabase Auth:
 
-- Email: demo@clinica.com
-- Contraseña: Demo1234!
-- Rol: admin
+- Angello
+	- Email: angelloevolution@evolution.com
+	- Contraseña: angello0912
+- Janet
+	- Email: janetevolution@evolution.com
+	- Contraseña: janet123
+- Evolution
+	- Email: evolutionadmin@evolution.com
+	- Contraseña: evolution1223
 
-También puedes usar este segundo usuario administrador:
+Después ejecuta [fase1-arquitectura/fase1-demo-user.sql](fase1-arquitectura/fase1-demo-user.sql) para asignarles el rol admin.
 
-- Email: admin@evolution.com
-- Contraseña: admin123
-- Rol: admin
-
-Para habilitarlo en tu proyecto de Supabase:
-
-1. Crea el usuario en Auth con ese email y contraseña.
-2. Ejecuta [fase1-arquitectura/fase1-demo-user.sql](fase1-arquitectura/fase1-demo-user.sql) para asignarle el rol admin.
+Si quieres que el nombre se vea correcto en el perfil, guarda el full name en la metadata de Auth con el mismo valor del usuario.
 
 ## Tecnologías
 - **DB**: PostgreSQL (Supabase) + RLS + Advisory Locks
