@@ -173,6 +173,10 @@ export default function ReportesPanel() {
   const suppliersMap = useMemo(() => new Map((suppliers ?? []).map((item) => [item.id, item])), [suppliers]);
   const lotsMap = useMemo(() => new Map((lots ?? []).map((item) => [item.id, item])), [lots]);
   const environmentsMap = useMemo(() => new Map((environments ?? []).map((item) => [item.id, item])), [environments]);
+  const movementNotesMap = useMemo(
+    () => new Map((movements ?? []).map((movement) => [movement.id, movement.notes ?? movement.reference ?? null])),
+    [movements]
+  );
   const stockTotalsMap = useMemo(
     () => new Map((stockByMaterial ?? []).map((item) => [item.material_id, item])),
     [stockByMaterial]
@@ -284,10 +288,10 @@ export default function ReportesPanel() {
       stock_actual: currentStock?.total_qty ?? row.running_total,
       environment: row.environment ?? "—",
       performed_by: row.performed_by ?? "—",
-      notes: row.reference ?? "—",
+      notes: row.notes ?? movementNotesMap.get(row.movement_id) ?? row.reference ?? "—",
       lot_number: row.lot_number ?? "—",
     })).filter((row) => !selectedEnvironmentName || row.environment === selectedEnvironmentName);
-  }, [kardexRows, materialFilter, materialsMap, stockTotalsMap, environmentFilter, environmentsMap]);
+  }, [kardexRows, materialFilter, materialsMap, stockTotalsMap, environmentFilter, environmentsMap, movementNotesMap]);
 
   const consumptionRows = useMemo(() => {
     const grouped = new Map<string, {

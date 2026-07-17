@@ -28,7 +28,7 @@ Deno.serve(async (req: Request) => {
     return errorResponse("JSON inválido", "BAD_REQUEST");
   }
 
-  const { material_id, lot_id, quantity, sign, reference, notes, performed_at } = payload;
+  const { material_id, lot_id, quantity, sign, reference, environment_id, notes, performed_at } = payload;
 
   if (!material_id || !quantity || quantity <= 0 || !sign || !notes?.trim()) {
     return errorResponse(
@@ -44,6 +44,7 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await service.rpc("process_adjustment_atomic", {
       p_material_id:  material_id,
       p_lot_id:       lot_id ?? null,
+      p_environment_id: environment_id ?? null,
       p_quantity:     quantity,
       p_sign:         sign,
       p_reference:    reference ?? null,
@@ -69,6 +70,7 @@ Deno.serve(async (req: Request) => {
         movement_type: row.movement_type,
         material_id,
         lot_id: lot_id ?? null,
+        environment_id: environment_id ?? null,
         quantity,
         sign,
         performed_at: performed_at ?? new Date().toISOString(),

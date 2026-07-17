@@ -154,6 +154,7 @@ export interface KardexRow {
   environment: string | null;
   performed_by: string;
   reference: string | null;
+  notes: string | null;
   quantity_in: number;
   quantity_out: number;
   running_total: number;
@@ -167,7 +168,7 @@ export interface RegisterEntryPayload {
   unit_cost?: number;
   reference?: string;
   notes?: string;
-  environment_id?: string;
+  environment_id: string;
   performed_at?: string;
   lot?: {
     lot_number: string;
@@ -192,6 +193,7 @@ export interface RegisterAdjustmentPayload {
   lot_id?: string;
   quantity: number;
   sign: "positive" | "negative";
+  environment_id?: string;
   notes: string;
   performed_at?: string;
 }

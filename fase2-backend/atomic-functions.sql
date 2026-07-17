@@ -162,7 +162,7 @@ $$;
 -- process_adjustment_atomic
 -- Ajuste +/- con lock por material.
 -- ============================================================
-DROP FUNCTION IF EXISTS process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID);
+DROP FUNCTION IF EXISTS process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ, UUID);
 DROP FUNCTION IF EXISTS process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ);
 CREATE OR REPLACE FUNCTION process_adjustment_atomic(
   p_material_id  UUID,
@@ -172,7 +172,8 @@ CREATE OR REPLACE FUNCTION process_adjustment_atomic(
   p_reference    TEXT DEFAULT NULL,
   p_notes        TEXT DEFAULT NULL,
   p_performed_by UUID DEFAULT NULL,
-  p_performed_at TIMESTAMPTZ DEFAULT NULL
+  p_performed_at TIMESTAMPTZ DEFAULT NULL,
+  p_environment_id UUID DEFAULT NULL
 )
 RETURNS TABLE(movement_id UUID, movement_type TEXT)
 LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -204,7 +205,7 @@ BEGIN
     material_id, lot_id, environment_id, type, quantity,
     unit_cost, reference, notes, status, performed_by, performed_at
   ) VALUES (
-    p_material_id, p_lot_id, NULL, v_type::movement_type, p_quantity,
+    p_material_id, p_lot_id, p_environment_id, v_type::movement_type, p_quantity,
     NULL, p_reference,
     '[AJUSTE ' || upper(p_sign) || '] ' || p_notes,
     'confirmed', p_performed_by, v_timestamp
@@ -222,7 +223,7 @@ $$;
 -- ============================================================
 REVOKE ALL ON FUNCTION process_entry_atomic(UUID, NUMERIC, NUMERIC, TEXT, TEXT, UUID, UUID, TIMESTAMPTZ, TEXT, DATE, DATE, UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC, TIMESTAMPTZ) FROM PUBLIC;
-REVOKE ALL ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ) FROM PUBLIC;
+REVOKE ALL ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ, UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION process_entry_atomic(UUID, NUMERIC, NUMERIC, TEXT, TEXT, UUID, UUID, TIMESTAMPTZ, TEXT, DATE, DATE, UUID) TO service_role;
 GRANT EXECUTE ON FUNCTION process_exit_atomic(UUID, NUMERIC, UUID, UUID, TEXT, TEXT, NUMERIC, TIMESTAMPTZ) TO service_role;
-GRANT EXECUTE ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ) TO service_role;
+GRANT EXECUTE ON FUNCTION process_adjustment_atomic(UUID, UUID, NUMERIC, TEXT, TEXT, TEXT, UUID, TIMESTAMPTZ, UUID) TO service_role;

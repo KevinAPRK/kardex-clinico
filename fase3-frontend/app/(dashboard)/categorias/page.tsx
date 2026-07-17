@@ -83,7 +83,7 @@ export default function CategoriasPage() {
 
   return (
     <div>
-      <Header title="Categorías" subtitle="Clasificación de productos y materiales" />
+      <Header title="Categorías" />
       <div className="p-4 sm:p-6">
         <PageHeader
           title="Categorías de Productos"

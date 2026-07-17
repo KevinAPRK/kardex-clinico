@@ -34,8 +34,8 @@ Deno.serve(async (req: Request) => {
 
   const { material_id, quantity, unit_cost, reference, notes, environment_id, performed_at } = payload;
 
-  if (!material_id || !quantity || quantity <= 0) {
-    return errorResponse("material_id y quantity > 0 son requeridos", "VALIDATION_ERROR");
+  if (!material_id || !quantity || quantity <= 0 || !environment_id) {
+    return errorResponse("material_id, quantity > 0 y environment_id son requeridos", "VALIDATION_ERROR");
   }
 
   try {

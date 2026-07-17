@@ -30,7 +30,7 @@ export const entrySchema = z.object({
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   unit_cost: z.coerce.number().min(0).optional(),
   notes: z.string().max(500).optional(),
-  environment_id: z.string().uuid().optional().nullable(),
+  environment_id: z.string().uuid("Ambiente requerido"),
   performed_at: z.string().optional(),
   requires_lot: z.boolean(),
   lot_number: z.string().optional(),
@@ -66,6 +66,7 @@ export const adjustmentSchema = z.object({
   lot_id: z.string().uuid().optional().nullable(),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   sign: z.enum(["positive", "negative"]),
+  environment_id: z.string().uuid("Ambiente requerido"),
   notes: z.string().min(5, "Detalle requerido (min 5 caracteres)"),
   performed_at: z.string().optional(),
 });

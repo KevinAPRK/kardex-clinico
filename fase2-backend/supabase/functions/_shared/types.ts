@@ -65,7 +65,7 @@ export interface RegisterEntryPayload {
   unit_cost?: number;
   reference?: string;
   notes?: string;
-  environment_id?: string;
+  environment_id: string;
   performed_at?: string;
   lot?: {
     lot_number: string;
@@ -91,6 +91,7 @@ export interface RegisterAdjustmentPayload {
   quantity: number;
   sign: "positive" | "negative";
   reference?: string;
+  environment_id?: string;
   notes: string;
   performed_at?: string;
 }

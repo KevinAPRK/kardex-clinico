@@ -83,7 +83,7 @@ export default function UnidadesPage() {
 
   return (
     <div>
-      <Header title="Unidades" subtitle="Medidas disponibles para el catálogo de materiales" />
+      <Header title="Unidades" />
       <div className="p-4 sm:p-6">
         <PageHeader
           title="Unidades de Medida"

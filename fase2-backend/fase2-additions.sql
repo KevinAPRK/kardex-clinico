@@ -44,6 +44,7 @@ RETURNS TABLE (
   environment   TEXT,
   performed_by  TEXT,
   reference     TEXT,
+  notes         TEXT,
   quantity_in   NUMERIC,
   quantity_out  NUMERIC,
   running_total NUMERIC
@@ -61,6 +62,7 @@ BEGIN
       e.name AS environment,
       p.full_name AS performed_by,
       m.reference,
+      m.notes,
       CASE WHEN m.type IN ('entry', 'adjustment', 'return') THEN m.quantity ELSE 0 END AS qty_in,
       CASE WHEN m.type IN ('exit', 'loss', 'transfer')       THEN m.quantity ELSE 0 END AS qty_out
     FROM movements m
@@ -82,6 +84,7 @@ BEGIN
     b.environment,
     b.performed_by,
     b.reference,
+    b.notes,
     b.qty_in,
     b.qty_out,
     SUM(b.qty_in - b.qty_out) OVER (ORDER BY b.performed_at ROWS UNBOUNDED PRECEDING) AS running_total
@@ -125,3 +128,33 @@ CREATE POLICY "email_log: admin read"
 
 -- Solo service_role puede insertar (desde Edge Functions)
 -- No se añade policy INSERT para roles normales.
+
+
+-- ── Migración manual: reasignar ajustes históricos a Almacen ──
+-- Ejecutar una sola vez en Supabase SQL Editor.
+-- Solo toca movimientos de tipo 'adjustment'. No modifica entradas ni salidas.
+DO $$
+DECLARE
+  v_almacen_id UUID;
+BEGIN
+  SELECT id
+    INTO v_almacen_id
+  FROM environments
+  WHERE name ~* 'almac[eé]n'
+  ORDER BY created_at ASC
+  LIMIT 1;
+
+  IF v_almacen_id IS NULL THEN
+    RAISE EXCEPTION 'No se encontró un ambiente llamado Almacen o Almacén';
+  END IF;
+
+  ALTER TABLE movements DISABLE TRIGGER lock_confirmed_movements;
+
+  UPDATE movements
+     SET environment_id = v_almacen_id
+   WHERE type = 'adjustment'
+     AND status = 'confirmed'
+     AND (environment_id IS DISTINCT FROM v_almacen_id);
+
+  ALTER TABLE movements ENABLE TRIGGER lock_confirmed_movements;
+END $$;

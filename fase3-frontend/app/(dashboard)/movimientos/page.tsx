@@ -114,6 +114,7 @@ export default function MovimientosPage() {
         {activeTab === "ajuste" && (
           <AjusteForm
             materials={materials ?? []}
+            environments={environments ?? []}
             onSuccess={(msg) => { showFeedback(msg); refetchMovements(); setActiveTab("historial"); }}
             onError={(msg) => showFeedback(msg, true)}
           />
@@ -218,7 +219,7 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<EntryFormValues>({
     resolver: zodResolver(entrySchema),
-    defaultValues: { requires_lot: false, performed_at: todayDateValue() },
+    defaultValues: { requires_lot: false, performed_at: todayDateValue(), environment_id: "" },
   });
 
   const selectedMaterialId = watch("material_id");
@@ -246,7 +247,7 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
     const { error } = await callEdgeFunction("register-entry", payload as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
-    reset({ requires_lot: false, performed_at: todayDateValue() });
+    reset({ requires_lot: false, performed_at: todayDateValue(), environment_id: "" });
     onSuccess(`✅ Entrada registrada correctamente.`);
   }
 
@@ -282,9 +283,9 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
             </FormField>
           </div>
 
-          <FormField label="Ambiente" error={undefined}>
-            <select {...register("environment_id")} className={iCls(false)}>
-              <option value="">— Ninguno —</option>
+          <FormField label="Ambiente *" error={errors.environment_id?.message}>
+            <select {...register("environment_id")} className={iCls(!!errors.environment_id)}>
+              <option value="">— Seleccionar ambiente —</option>
               {environments.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
             </select>
           </FormField>
@@ -403,15 +404,16 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
 }
 
 // ── AJUSTE FORM ──────────────────────────────────────────────
-function AjusteForm({ materials, onSuccess, onError }: {
+function AjusteForm({ materials, environments, onSuccess, onError }: {
   materials: import("@/types").Material[];
+  environments: import("@/types").Environment[];
   onSuccess: (msg: string) => void;
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<AdjustmentFormValues>({
     resolver: zodResolver(adjustmentSchema),
-    defaultValues: { sign: "positive", performed_at: todayDateValue() },
+    defaultValues: { sign: "positive", performed_at: todayDateValue(), environment_id: "" },
   });
 
   const sign = watch("sign");
@@ -420,11 +422,12 @@ function AjusteForm({ materials, onSuccess, onError }: {
     setSaving(true);
     const { error } = await callEdgeFunction("register-adjustment", {
       ...values,
+      environment_id: values.environment_id || undefined,
       performed_at: dateValueToIso(values.performed_at),
     } as unknown as Record<string, unknown>);
     setSaving(false);
     if (error) { onError(error); return; }
-    reset({ sign: "positive", performed_at: todayDateValue() });
+    reset({ sign: "positive", performed_at: todayDateValue(), environment_id: "" });
     onSuccess("✅ Ajuste registrado correctamente.");
   }
 
@@ -463,6 +466,15 @@ function AjusteForm({ materials, onSuccess, onError }: {
 
           <FormField label="Cantidad *" error={errors.quantity?.message}>
             <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)} />
+          </FormField>
+
+          <FormField label="Ambiente *" error={errors.environment_id?.message}>
+            <select {...register("environment_id")} className={iCls(!!errors.environment_id)}>
+              <option value="">— Sin ambiente —</option>
+              {environments.map((environment) => (
+                <option key={environment.id} value={environment.id}>{environment.name}</option>
+              ))}
+            </select>
           </FormField>
 
           <FormField label="Fecha del movimiento" error={undefined}>

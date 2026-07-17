@@ -88,7 +88,7 @@ export default function AmbientesPage() {
 
   return (
     <div>
-      <Header title="Ambientes" subtitle="Puntos de destino para movimientos de inventario" />
+      <Header title="Ambientes" />
       <div className="p-4 sm:p-6">
         <PageHeader
           title="Ambientes"
