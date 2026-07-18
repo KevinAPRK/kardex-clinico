@@ -1,8 +1,8 @@
 "use client";
 // app/(dashboard)/movimientos/page.tsx
 // Llama Edge Functions. CERO lógica de negocio en este archivo.
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
@@ -217,21 +217,13 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<EntryFormValues>({
+  const { control, register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<EntryFormValues>({
     resolver: zodResolver(entrySchema),
     defaultValues: { requires_lot: false, performed_at: todayDateValue(), environment_id: "" },
   });
 
   const selectedMaterialId = watch("material_id");
   const selectedMaterial = materials.find((m) => m.id === selectedMaterialId);
-  const materialField = register("material_id");
-
-  // Sincronizar requires_lot cuando cambia el material
-  const handleMaterialChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setValue("material_id", id);
-    setValue("requires_lot", false);
-  };
 
   async function onSubmit(values: EntryFormValues) {
     setSaving(true);
@@ -259,19 +251,23 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
           <h3 className="font-semibold text-slate-900">Registrar Entrada</h3>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormField label="Material *" error={errors.material_id?.message}>
-            <select
-              {...materialField}
-              onChange={(e) => {
-                materialField.onChange(e);
-                handleMaterialChange(e);
-              }}
-              className={iCls(!!errors.material_id)}
-            >
-              <option value="">— Seleccionar material —</option>
-              {materials.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.code})</option>)}
-            </select>
-          </FormField>
+          <Controller
+            control={control}
+            name="material_id"
+            render={({ field, fieldState }) => (
+              <MaterialSearchSelect
+                label="Material *"
+                materials={materials}
+                value={field.value ?? ""}
+                error={fieldState.error?.message}
+                placeholder="Escribe para buscar material"
+                onChange={(materialId) => {
+                  field.onChange(materialId);
+                  setValue("requires_lot", false);
+                }}
+              />
+            )}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Cantidad *" error={errors.quantity?.message}>
@@ -316,7 +312,7 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExitFormValues>({
+  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
     defaultValues: { performed_at: todayDateValue() },
   });
@@ -355,12 +351,20 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormField label="Material *" error={errors.material_id?.message}>
-            <select {...register("material_id")} className={iCls(!!errors.material_id)}>
-              <option value="">— Seleccionar material —</option>
-              {materials.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.code})</option>)}
-            </select>
-          </FormField>
+          <Controller
+            control={control}
+            name="material_id"
+            render={({ field, fieldState }) => (
+              <MaterialSearchSelect
+                label="Material *"
+                materials={materials}
+                value={field.value ?? ""}
+                error={fieldState.error?.message}
+                placeholder="Escribe para buscar material"
+                onChange={field.onChange}
+              />
+            )}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Cantidad *" error={errors.quantity?.message}>
@@ -411,7 +415,7 @@ function AjusteForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<AdjustmentFormValues>({
+  const { control, register, handleSubmit, watch, reset, formState: { errors } } = useForm<AdjustmentFormValues>({
     resolver: zodResolver(adjustmentSchema),
     defaultValues: { sign: "positive", performed_at: todayDateValue(), environment_id: "" },
   });
@@ -438,15 +442,23 @@ function AjusteForm({ materials, environments, onSuccess, onError }: {
           <Filter className="h-5 w-5 text-amber-600" />
           <h3 className="font-semibold text-slate-900">Ajuste de Stock</h3>
         </div>
-        <p className="text-xs text-slate-500 mb-5">Solo administradores. El ajuste queda registrado para auditoría.</p>
+        <p className="text-xs text-slate-500 mb-5"></p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormField label="Material *" error={errors.material_id?.message}>
-            <select {...register("material_id")} className={iCls(!!errors.material_id)}>
-              <option value="">— Seleccionar material —</option>
-              {materials.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.code})</option>)}
-            </select>
-          </FormField>
+          <Controller
+            control={control}
+            name="material_id"
+            render={({ field, fieldState }) => (
+              <MaterialSearchSelect
+                label="Material *"
+                materials={materials}
+                value={field.value ?? ""}
+                error={fieldState.error?.message}
+                placeholder="Escribe para buscar material"
+                onChange={field.onChange}
+              />
+            )}
+          />
 
           {/* Sign toggle */}
           <div className="flex rounded-lg border border-slate-200 overflow-hidden">
@@ -483,7 +495,7 @@ function AjusteForm({ materials, environments, onSuccess, onError }: {
 
           <FormField label="Detalle del ajuste *" error={errors.notes?.message}>
             <textarea {...register("notes")} rows={3} className={iCls(!!errors.notes) + " resize-none"}
-              placeholder="Explicar razón del ajuste (merma, inventario físico, etc.)" />
+              placeholder="Explicar razón del ajuste" />
           </FormField>
 
           <button type="submit" disabled={saving}
@@ -503,6 +515,92 @@ function FormField({ label, error, children }: { label: string; error?: string; 
       {children}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
+  );
+}
+
+function MaterialSearchSelect({
+  label,
+  materials,
+  value,
+  onChange,
+  error,
+  placeholder,
+}: {
+  label: string;
+  materials: import("@/types").Material[];
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  placeholder: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selectedMaterial = useMemo(
+    () => materials.find((material) => material.id === value) ?? null,
+    [materials, value]
+  );
+
+  const filteredMaterials = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return materials;
+    return materials.filter((material) =>
+      `${material.name} ${material.code}`.toLowerCase().includes(normalizedQuery)
+    );
+  }, [materials, query]);
+
+  useEffect(() => {
+    if (open) return;
+    setQuery(selectedMaterial ? `${selectedMaterial.name} (${selectedMaterial.code})` : "");
+  }, [open, selectedMaterial]);
+
+  const handleSelect = (material: import("@/types").Material) => {
+    onChange(material.id);
+    setQuery(`${material.name} (${material.code})`);
+    setOpen(false);
+  };
+
+  return (
+    <FormField label={label} error={error}>
+      <div className="relative">
+        <input
+          type="text"
+          value={open ? query : (selectedMaterial ? `${selectedMaterial.name} (${selectedMaterial.code})` : query)}
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            const nextQuery = event.target.value;
+            setQuery(nextQuery);
+            setOpen(true);
+            if (!nextQuery) onChange("");
+          }}
+          onBlur={() => {
+            window.setTimeout(() => setOpen(false), 120);
+          }}
+          placeholder={placeholder}
+          className={iCls(!!error)}
+          autoComplete="off"
+        />
+
+        {open && filteredMaterials.length > 0 && (
+          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+            {filteredMaterials.map((material) => (
+              <button
+                key={material.id}
+                type="button"
+                className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-slate-50"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  handleSelect(material);
+                }}
+              >
+                <span className="font-medium text-slate-900">{material.name}</span>
+                <span className="text-xs text-slate-500">{material.code}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </FormField>
   );
 }
 
