@@ -1,7 +1,7 @@
 "use client";
 // app/(dashboard)/kardex/page.tsx
 // Consume get_kardex() SQL function. CERO cálculos aquí.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
 import { useMaterials, useKardex, useStockByMaterial, useEnvironments } from "@/lib/hooks";
@@ -44,17 +44,13 @@ export default function KardexPage() {
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 mb-6">
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Material</label>
-              <select
+              <MaterialSearchSelect
+                label="Material"
+                materials={materials ?? []}
                 value={selectedMaterialId}
-                onChange={(e) => setSelectedMaterialId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
-              >
-                <option value="">— Seleccionar material —</option>
-                {materials?.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.code})</option>
-                ))}
-              </select>
+                onChange={setSelectedMaterialId}
+                placeholder="Escribe para buscar material"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Desde</label>
@@ -192,6 +188,91 @@ function SummaryCard({ label, value, sub, color = "text-slate-900" }: {
       <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{label}</p>
       <p className={cn("text-xl font-bold mt-1 truncate", color)}>{value}</p>
       {sub && <p className="text-xs text-slate-400 uppercase mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function MaterialSearchSelect({
+  label,
+  materials,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  materials: import("@/types").Material[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selectedMaterial = useMemo(
+    () => materials.find((material) => material.id === value) ?? null,
+    [materials, value]
+  );
+
+  const filteredMaterials = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return materials;
+    return materials.filter((material) =>
+      `${material.name} ${material.code}`.toLowerCase().includes(normalizedQuery)
+    );
+  }, [materials, query]);
+
+  useEffect(() => {
+    if (open) return;
+    setQuery(selectedMaterial ? `${selectedMaterial.name} (${selectedMaterial.code})` : "");
+  }, [open, selectedMaterial]);
+
+  const handleSelect = (material: import("@/types").Material) => {
+    onChange(material.id);
+    setQuery(`${material.name} (${material.code})`);
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
+      <div className="relative">
+        <input
+          type="text"
+          value={open ? query : (selectedMaterial ? `${selectedMaterial.name} (${selectedMaterial.code})` : query)}
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            const nextQuery = event.target.value;
+            setQuery(nextQuery);
+            setOpen(true);
+            if (!nextQuery) onChange("");
+          }}
+          onBlur={() => {
+            window.setTimeout(() => setOpen(false), 120);
+          }}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-ev-gold focus:outline-none"
+          autoComplete="off"
+        />
+
+        {open && filteredMaterials.length > 0 && (
+          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+            {filteredMaterials.map((material) => (
+              <button
+                key={material.id}
+                type="button"
+                className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-slate-50"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  handleSelect(material);
+                }}
+              >
+                <span className="font-medium text-slate-900">{material.name}</span>
+                <span className="text-xs text-slate-500">{material.code}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
