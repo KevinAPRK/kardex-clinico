@@ -1,10 +1,10 @@
 "use client";
 // app/(dashboard)/kardex/page.tsx
 // Consume get_kardex() SQL function. CERO cálculos aquí.
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/components/shared";
-import { useMaterials, useKardex, useStockByMaterial } from "@/lib/hooks";
+import { useMaterials, useKardex, useStockByMaterial, useEnvironments } from "@/lib/hooks";
 import { formatDateTime, formatQty } from "@/lib/utils";
 import { ClipboardList, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,11 @@ export default function KardexPage() {
   const [to, setTo] = useState("");
 
   const { data: materials } = useMaterials();
+  const { data: environments } = useEnvironments();
+  const environmentsMap = useMemo(
+    () => new Map((environments ?? []).map((environment) => [environment.id, environment.name])),
+    [environments]
+  );
   const selectedMaterial = materials?.find((m) => m.id === selectedMaterialId);
   const { data: stockByMaterial } = useStockByMaterial();
   const currentStock = stockByMaterial?.find((item) => item.material_id === selectedMaterialId) ?? null;
@@ -126,7 +131,7 @@ export default function KardexPage() {
                               <MovementBadge type={row.type} />
                             </td>
                             <td className="px-4 py-3 text-slate-500 text-xs">
-                              {row.environment ?? "—"}
+                              {row.environment ?? environmentsMap.get(row.environment_id ?? "") ?? "—"}
                             </td>
                             <td className="px-4 py-3 text-right">
                               {row.quantity_in > 0 ? (

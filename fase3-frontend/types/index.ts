@@ -151,6 +151,7 @@ export interface KardexRow {
   type: MovementType;
   lot_number: string | null;
   expiry_date: string | null;
+  environment_id: string | null;
   environment: string | null;
   performed_by: string;
   reference: string | null;

@@ -6,14 +6,14 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
-import { useMaterials, useMovements, useEnvironments, useLatestMaterialUnitCost, useStockByMaterial } from "@/lib/hooks";
+import { useMaterials, useMovements, useEnvironments, useAllEnvironments, useLatestMaterialUnitCost, useStockByMaterial } from "@/lib/hooks";
 import { entrySchema, exitSchema, adjustmentSchema, type EntryFormValues, type ExitFormValues, type AdjustmentFormValues } from "@/lib/validators";
 import { callEdgeFunction } from "@/lib/supabase/edge";
 import { formatDateTime, formatQty } from "@/lib/utils";
 import { Plus, ArrowUpRight, ArrowDownRight, SlidersHorizontal, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "historial" | "entrada" | "salida" | "ajuste";
+type Tab = "historial" | "entrada" | "salida";
 
 function todayDateValue() {
   const now = new Date();
@@ -49,12 +49,16 @@ export default function MovimientosPage() {
   });
   const { data: materials } = useMaterials();
   const { data: environments } = useEnvironments();
+  const { data: allEnvironments } = useAllEnvironments();
+  const environmentsMap = useMemo(
+    () => new Map((allEnvironments ?? []).map((environment) => [environment.id, environment.name])),
+    [allEnvironments]
+  );
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "historial", label: "Historial", icon: SlidersHorizontal },
     { id: "entrada",   label: "Registrar Entrada", icon: ArrowUpRight },
     { id: "salida",    label: "Registrar Salida",  icon: ArrowDownRight },
-    { id: "ajuste",    label: "Ajuste de Stock",   icon: Filter },
   ];
 
   function showFeedback(msg: string, isError = false) {
@@ -64,7 +68,7 @@ export default function MovimientosPage() {
 
   return (
     <div>
-      <Header title="Movimientos" subtitle="Entradas, salidas y ajustes de inventario" />
+      <Header title="Movimientos" subtitle="Entradas y salidas de inventario" />
       <div className="p-4 sm:p-6">
         <PageHeader title="Control de Movimientos" />
 
@@ -90,6 +94,7 @@ export default function MovimientosPage() {
         {activeTab === "historial" && (
           <HistorialTab
             movements={movements ?? []}
+            environmentsMap={environmentsMap}
             loading={movLoading}
             typeFilter={typeFilter}
             setTypeFilter={setTypeFilter}
@@ -111,22 +116,15 @@ export default function MovimientosPage() {
             onError={(msg) => showFeedback(msg, true)}
           />
         )}
-        {activeTab === "ajuste" && (
-          <AjusteForm
-            materials={materials ?? []}
-            environments={environments ?? []}
-            onSuccess={(msg) => { showFeedback(msg); refetchMovements(); setActiveTab("historial"); }}
-            onError={(msg) => showFeedback(msg, true)}
-          />
-        )}
       </div>
     </div>
   );
 }
 
 // ── HISTORIAL ────────────────────────────────────────────────
-function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
+function HistorialTab({ movements, environmentsMap, loading, typeFilter, setTypeFilter }: {
   movements: import("@/types").Movement[];
+  environmentsMap: Map<string, string>;
   loading: boolean;
   typeFilter: string;
   setTypeFilter: (v: string) => void;
@@ -171,7 +169,7 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                 <th className="px-5 py-3 text-left font-medium">Material</th>
                 <th className="px-5 py-3 text-right font-medium">Cantidad</th>
                 <th className="px-5 py-3 text-right font-medium">Saldo real</th>
-                <th className="px-5 py-3 text-left font-medium">Servicio</th>
+                <th className="px-5 py-3 text-left font-medium">Ambiente</th>
                 <th className="px-5 py-3 text-left font-medium">Realizado por</th>
                 <th className="px-5 py-3 text-left font-medium">Fecha</th>
               </tr>
@@ -193,7 +191,7 @@ function HistorialTab({ movements, loading, typeFilter, setTypeFilter }: {
                     })()}
                   </td>
                   <td className="px-5 py-3 text-slate-500">
-                    {(mv.environment as { name: string } | null)?.name ?? "—"}
+                    {(mv.environment as { name: string } | null)?.name ?? environmentsMap.get(mv.environment_id) ?? "—"}
                   </td>
                   <td className="px-5 py-3 text-slate-500 text-xs">
                     {(mv.performer as { full_name: string })?.full_name ?? "—"}

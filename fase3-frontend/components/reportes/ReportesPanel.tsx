@@ -6,6 +6,7 @@ import { PageHeader, MovementBadge, LoadingSpinner, EmptyState } from "@/compone
 import {
   useAllLots,
   useEnvironments,
+  useAllEnvironments,
   useKardex,
   useMaterialCategories,
   useMaterials,
@@ -151,6 +152,7 @@ export default function ReportesPanel() {
   const { data: suppliers } = useSuppliers();
   const { data: lots } = useAllLots(materialFilter || undefined);
   const { data: environments } = useEnvironments();
+  const { data: allEnvironments } = useAllEnvironments();
   const { data: categories } = useMaterialCategories();
   const { data: stockAlerts } = useStockAlerts();
   const { data: stockByLot } = useStockByLot(materialFilter || undefined);
@@ -172,7 +174,7 @@ export default function ReportesPanel() {
   const materialsMap = useMemo(() => new Map((materials ?? []).map((item) => [item.id, item])), [materials]);
   const suppliersMap = useMemo(() => new Map((suppliers ?? []).map((item) => [item.id, item])), [suppliers]);
   const lotsMap = useMemo(() => new Map((lots ?? []).map((item) => [item.id, item])), [lots]);
-  const environmentsMap = useMemo(() => new Map((environments ?? []).map((item) => [item.id, item])), [environments]);
+  const environmentsMap = useMemo(() => new Map((allEnvironments ?? []).map((item) => [item.id, item])), [allEnvironments]);
   const movementNotesMap = useMemo(
     () => new Map((movements ?? []).map((movement) => [movement.id, movement.notes ?? movement.reference ?? null])),
     [movements]
@@ -286,7 +288,7 @@ export default function ReportesPanel() {
       quantity_out: row.quantity_out,
       running_total: row.running_total,
       stock_actual: currentStock?.total_qty ?? row.running_total,
-      environment: row.environment ?? "—",
+      environment: row.environment ?? environmentsMap.get(row.environment_id ?? "")?.name ?? "—",
       performed_by: row.performed_by ?? "—",
       notes: row.notes ?? movementNotesMap.get(row.movement_id) ?? row.reference ?? "—",
       lot_number: row.lot_number ?? "—",

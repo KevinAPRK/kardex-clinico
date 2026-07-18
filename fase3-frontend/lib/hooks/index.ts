@@ -106,6 +106,16 @@ export function useEnvironments() {
   }, []);
 }
 
+export function useAllEnvironments() {
+  const db = createClient();
+  return useSupabaseQuery<Environment[]>(async () => {
+    const { data, error } = await db
+      .from("environments").select("*").order("name");
+    if (error) throw error;
+    return data ?? [];
+  }, []);
+}
+
 // ── STOCK ────────────────────────────────────────────────────
 export function useStockByMaterial() {
   const db = createClient();
@@ -189,7 +199,7 @@ export function useMovements(filters?: {
     let q = db
       .from("movements")
       .select(`
-        id, material_id, type, quantity, unit_cost, reference, notes, status, performed_at,
+        id, material_id, environment_id, type, quantity, unit_cost, reference, notes, status, performed_at,
         material:materials(id, name, code, category, unit),
         lot:lots(id, lot_number, expiry_date),
         environment:environments(id, name),

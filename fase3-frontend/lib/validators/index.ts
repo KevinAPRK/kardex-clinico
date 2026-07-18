@@ -53,7 +53,7 @@ export type EntryFormValues = z.infer<typeof entrySchema>;
 export const exitSchema = z.object({
   material_id: z.string().uuid("Material requerido"),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
-  environment_id: z.string().uuid("Servicio requerido"),
+  environment_id: z.string().uuid("Ambiente requerido"),
   notes: z.string().max(500).optional(),
   unit_cost: z.coerce.number().min(0).optional(),
   performed_at: z.string().optional(),
