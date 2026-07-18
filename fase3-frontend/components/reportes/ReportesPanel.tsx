@@ -74,7 +74,7 @@ const TEMPLATES: Record<ReportTemplateId, { label: string; description: string; 
   "consumo-material": {
     label: "Consumo por material",
     description: "Resumen conjunto del consumo de materiales en el período seleccionado",
-    defaultColumns: ["material_name", "category", "unit", "consumed_qty", "total_value", "stock_actual"],
+    defaultColumns: ["material_name", "category", "unit", "consumed_qty", "stock_actual"],
   },
   "materiales-bajo-stock": {
     label: "Materiales bajo stock",
@@ -303,7 +303,6 @@ export default function ReportesPanel() {
       category: string;
       unit: string;
       consumed_qty: number;
-      total_value: number;
       stock_actual: number;
     }>();
 
@@ -318,11 +317,9 @@ export default function ReportesPanel() {
           category: material?.category ?? (movement.material as { category?: string | null } | undefined)?.category ?? "—",
           unit: material?.unit ?? (movement.material as { unit: string } | undefined)?.unit ?? "—",
           consumed_qty: 0,
-          total_value: 0,
           stock_actual: stockTotalsMap.get(movement.material_id)?.total_qty ?? 0,
         };
         current.consumed_qty += movement.quantity;
-        current.total_value += (movement.unit_cost ?? 0) * movement.quantity;
         current.stock_actual = stockTotalsMap.get(movement.material_id)?.total_qty ?? current.stock_actual;
         grouped.set(movement.material_id, current);
       });
@@ -410,11 +407,8 @@ export default function ReportesPanel() {
           { id: "category", label: "Categoría", render: (row) => String(row.category ?? "—") },
           { id: "unit", label: "Unidad", render: (row) => String(row.unit ?? "—") },
           { id: "consumed_qty", label: "Consumo", align: "right", render: (row) => formatCellValue(row.consumed_qty) },
-          { id: "total_value", label: "Valor", align: "right", render: (row) => `S/ ${Number(row.total_value ?? 0).toLocaleString("es-PE", { minimumFractionDigits: 2 })}` },
           { id: "stock_actual", label: "Stock actual", align: "right", render: (row) => formatQty(Number(row.stock_actual ?? 0), String(row.unit ?? "")) },
         ];
-        const totalConsumed = consumptionRows.reduce((sum, row) => sum + Number(row.consumed_qty ?? 0), 0);
-        const totalConsumedValue = consumptionRows.reduce((sum, row) => sum + Number(row.total_value ?? 0), 0);
         return {
           title: "Consumo por material",
           description: TEMPLATES[reportTemplate].description,
@@ -423,8 +417,8 @@ export default function ReportesPanel() {
           defaultColumnIds: TEMPLATES[reportTemplate].defaultColumns,
           summaryCards: [
             { label: "Materiales", value: consumptionRows.length.toLocaleString("es-PE"), note: "Materiales consumidos" },
-            { label: "Consumo total", value: totalConsumed.toLocaleString("es-PE"), note: "Unidades" },
-            { label: "Valor total", value: `S/ ${totalConsumedValue.toLocaleString("es-PE", { minimumFractionDigits: 2 })}`, note: "Costo acumulado" },
+            { label: "Consumo total", value: consumptionRows.reduce((sum, row) => sum + Number(row.consumed_qty ?? 0), 0).toLocaleString("es-PE"), note: "Unidades" },
+            { label: "Stock actual", value: stockSelected ? formatQty(stockSelected.total_qty, stockSelected.unit) : "—", note: "Material seleccionado" },
           ],
           emptyTitle: "Sin consumo",
           emptyDescription: "No hay salidas registradas en el período seleccionado.",

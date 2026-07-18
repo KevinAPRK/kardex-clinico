@@ -81,7 +81,6 @@ export interface Movement {
   environment_id: string | null;
   type: MovementType;
   quantity: number;
-  unit_cost: number | null;
   reference: string | null;
   notes: string | null;
   status: MovementStatus;
@@ -166,7 +165,6 @@ export interface KardexRow {
 export interface RegisterEntryPayload {
   material_id: string;
   quantity: number;
-  unit_cost?: number;
   reference?: string;
   notes?: string;
   environment_id: string;
@@ -185,7 +183,6 @@ export interface RegisterExitPayload {
   environment_id: string;
   reference?: string;
   notes?: string;
-  unit_cost?: number;
   performed_at?: string;
 }
 

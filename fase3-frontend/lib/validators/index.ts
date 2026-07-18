@@ -28,7 +28,6 @@ export type SupplierFormValues = z.infer<typeof supplierSchema>;
 export const entrySchema = z.object({
   material_id: z.string().uuid("Material requerido"),
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
-  unit_cost: z.coerce.number().min(0).optional(),
   notes: z.string().max(500).optional(),
   environment_id: z.string().uuid("Ambiente requerido"),
   performed_at: z.string().optional(),
@@ -55,7 +54,6 @@ export const exitSchema = z.object({
   quantity: z.coerce.number().positive("Cantidad debe ser positiva"),
   environment_id: z.string().uuid("Ambiente requerido"),
   notes: z.string().max(500).optional(),
-  unit_cost: z.coerce.number().min(0).optional(),
   performed_at: z.string().optional(),
 });
 export type ExitFormValues = z.infer<typeof exitSchema>;

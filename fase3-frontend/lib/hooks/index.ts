@@ -199,7 +199,7 @@ export function useMovements(filters?: {
     let q = db
       .from("movements")
       .select(`
-        id, material_id, environment_id, type, quantity, unit_cost, reference, notes, status, performed_at,
+        id, material_id, environment_id, type, quantity, reference, notes, status, performed_at,
         material:materials(id, name, code, category, unit),
         lot:lots(id, lot_number, expiry_date),
         environment:environments(id, name),
@@ -219,27 +219,6 @@ export function useMovements(filters?: {
     if (error) throw error;
     return (data ?? []) as unknown as Movement[];
   }, [key]);
-}
-
-export function useLatestMaterialUnitCost(materialId?: string) {
-  const db = createClient();
-  return useSupabaseQuery<number | null>(async () => {
-    if (!materialId) return null;
-
-    const { data, error } = await db
-      .from("movements")
-      .select("unit_cost")
-      .eq("material_id", materialId)
-      .eq("status", "confirmed")
-      .eq("type", "entry")
-      .not("unit_cost", "is", null)
-      .order("performed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data?.unit_cost ?? null;
-  }, [materialId]);
 }
 
 // ── KARDEX ───────────────────────────────────────────────────

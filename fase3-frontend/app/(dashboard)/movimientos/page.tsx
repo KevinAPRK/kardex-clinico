@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
 import { PageHeader, MovementBadge, LoadingSpinner, EmptyState, AlertBanner } from "@/components/shared";
-import { useMaterials, useMovements, useEnvironments, useAllEnvironments, useLatestMaterialUnitCost, useStockByMaterial } from "@/lib/hooks";
+import { useMaterials, useMovements, useEnvironments, useAllEnvironments, useStockByMaterial } from "@/lib/hooks";
 import { entrySchema, exitSchema, adjustmentSchema, type EntryFormValues, type ExitFormValues, type AdjustmentFormValues } from "@/lib/validators";
 import { callEdgeFunction } from "@/lib/supabase/edge";
 import { formatDateTime, formatQty } from "@/lib/utils";
@@ -228,7 +228,6 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
     const payload: import("@/types").RegisterEntryPayload = {
       material_id: values.material_id,
       quantity: values.quantity,
-      unit_cost: values.unit_cost,
       notes: values.notes,
       environment_id: values.environment_id || undefined,
       performed_at: dateValueToIso(values.performed_at),
@@ -267,15 +266,10 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
             )}
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Cantidad *" error={errors.quantity?.message}>
-              <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)}
-                placeholder={selectedMaterial ? `en ${selectedMaterial.unit}` : "0"} />
-            </FormField>
-            <FormField label="Costo unitario" error={undefined}>
-              <input type="number" step="0.01" {...register("unit_cost")} className={iCls(false)} placeholder="S/ 0.00" />
-            </FormField>
-          </div>
+          <FormField label="Cantidad *" error={errors.quantity?.message}>
+            <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)}
+              placeholder={selectedMaterial ? `en ${selectedMaterial.unit}` : "0"} />
+          </FormField>
 
           <FormField label="Ambiente *" error={errors.environment_id?.message}>
             <select {...register("environment_id")} className={iCls(!!errors.environment_id)}>
@@ -310,23 +304,10 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExitFormValues>({
+  const { control, register, handleSubmit, reset, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
     defaultValues: { performed_at: todayDateValue() },
   });
-
-  const selectedMaterialId = watch("material_id");
-  const { data: latestUnitCost } = useLatestMaterialUnitCost(selectedMaterialId);
-
-  useEffect(() => {
-    if (!selectedMaterialId) {
-      setValue("unit_cost", undefined);
-      return;
-    }
-    if (typeof latestUnitCost === "number") {
-      setValue("unit_cost", latestUnitCost);
-    }
-  }, [selectedMaterialId, latestUnitCost, setValue]);
 
   async function onSubmit(values: ExitFormValues) {
     setSaving(true);
@@ -364,21 +345,9 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
             )}
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Cantidad *" error={errors.quantity?.message}>
-              <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)} />
-            </FormField>
-            <FormField label="Costo unitario" error={undefined}>
-              <input
-                type="number"
-                step="0.01"
-                readOnly
-                {...register("unit_cost")}
-                className={cn(iCls(false), "bg-slate-50 text-slate-700 cursor-not-allowed")}
-                placeholder="S/ 0.00"
-              />
-            </FormField>
-          </div>
+          <FormField label="Cantidad *" error={errors.quantity?.message}>
+            <input type="number" step="0.01" {...register("quantity")} className={iCls(!!errors.quantity)} />
+          </FormField>
 
           <FormField label="Ambiente destino *" error={errors.environment_id?.message}>
             <select {...register("environment_id")} className={iCls(!!errors.environment_id)}>
