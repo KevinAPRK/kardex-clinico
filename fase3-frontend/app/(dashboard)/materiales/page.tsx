@@ -1,6 +1,6 @@
 "use client";
 // app/(dashboard)/materiales/page.tsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Header } from "@/components/layout/Header";
@@ -14,6 +14,7 @@ import type { Material } from "@/types";
 
 export default function MaterialesPage() {
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
   const [saving, setSaving] = useState(false);
@@ -25,6 +26,17 @@ export default function MaterialesPage() {
   const { data: categories } = useMaterialCategories();
   const { data: units } = useMaterialUnits();
   const db = createClient();
+
+  const searchResults = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return materials ?? [];
+    return (materials ?? []).filter((material) => {
+      const haystack = [material.code, material.name, material.category ?? "", material.unit]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [materials, search]);
 
   const {
     register,
@@ -117,10 +129,40 @@ export default function MaterialesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setSearchOpen(true)}
+            onBlur={() => window.setTimeout(() => setSearchOpen(false), 120)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSearchOpen(true);
+            }}
             placeholder="Buscar por nombre..."
             className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-ev-gold focus:outline-none focus:ring-1 focus:ring-ev-gold"
           />
+          {searchOpen && search.trim() && (
+            <div className="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+              {searchResults.length ? (
+                searchResults.map((material) => (
+                  <button
+                    key={material.id}
+                    type="button"
+                    className="flex w-full flex-col items-start border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      setSearch(material.name);
+                      setSearchOpen(false);
+                    }}
+                  >
+                    <span className="font-medium text-slate-900">{material.name}</span>
+                    <span className="text-xs text-slate-500">
+                      {material.code} {material.category ? `· ${material.category}` : ""} · {material.unit}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-slate-500">Sin coincidencias</div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Table */}
