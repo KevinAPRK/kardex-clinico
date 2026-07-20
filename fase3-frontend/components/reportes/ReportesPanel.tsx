@@ -7,7 +7,6 @@ import {
   useAllLots,
   useEnvironments,
   useAllEnvironments,
-  useKardex,
   useMaterialCategories,
   useMaterials,
   useMovements,
@@ -69,8 +68,8 @@ const TEMPLATES: Record<ReportTemplateId, { label: string; description: string; 
   },
   "kardex-movimientos": {
     label: "Kardex de movimientos",
-    description: "Vista cronológica del Kardex por material seleccionado",
-    defaultColumns: ["performed_at", "type", "material_name", "material_code", "quantity_in", "quantity_out", "running_total", "stock_actual", "environment", "performed_by"],
+    description: "Vista cronológica del Kardex con todos los movimientos del período seleccionado",
+    defaultColumns: ["category", "performed_at", "type", "material_name", "material_code", "quantity_in", "quantity_out", "running_total", "stock_actual", "environment", "performed_by"],
   },
   "consumo-material": {
     label: "Consumo por material",
@@ -164,19 +163,15 @@ export default function ReportesPanel() {
   const { data: stockAlerts } = useStockAlerts();
   const { data: stockByLot } = useStockByLot(materialFilter || undefined);
   const { data: stockByMaterial } = useStockByMaterial();
+  const movementsMaterialFilter = reportTemplate === "kardex-movimientos" ? undefined : materialFilter || undefined;
   const { data: movements, loading: movementsLoading } = useMovements({
     type: typeFilter !== "all" ? typeFilter : undefined,
-    material_id: materialFilter || undefined,
+    material_id: movementsMaterialFilter,
     environment_id: environmentFilter || undefined,
     from: dateValueToIsoStart(fromDate),
     to: dateValueToIsoEnd(toDate),
     limit: 1000,
   });
-  const { data: kardexRows, loading: kardexLoading } = useKardex(
-    materialFilter,
-    dateValueToIsoStart(fromDate),
-    dateValueToIsoEnd(toDate)
-  );
 
   const materialsMap = useMemo(() => new Map((materials ?? []).map((item) => [item.id, item])), [materials]);
   const suppliersMap = useMemo(() => new Map((suppliers ?? []).map((item) => [item.id, item])), [suppliers]);
@@ -282,28 +277,45 @@ export default function ReportesPanel() {
   }, [materials, categoryFilter, suppliersMap, stockTotalsMap]);
 
   const kardexReportRows = useMemo(() => {
-    if (!materialFilter) return [];
-    const material = materialsMap.get(materialFilter);
-    const currentStock = stockTotalsMap.get(materialFilter);
     const selectedEnvironmentName = environmentFilter ? environmentsMap.get(environmentFilter)?.name ?? null : null;
-    return (kardexRows ?? []).map((row) => ({
-      material_id: materialFilter,
-      performed_at: row.performed_at,
-      type: row.type,
-      material_name: material?.name ?? "—",
-      material_code: material?.code ?? "—",
-      category: material?.category ?? "—",
-      unit: material?.unit ?? "—",
-      quantity_in: row.quantity_in,
-      quantity_out: row.quantity_out,
-      running_total: row.running_total,
-      stock_actual: currentStock?.total_qty ?? row.running_total,
-      environment: row.environment ?? environmentsMap.get(row.environment_id ?? "")?.name ?? "—",
-      performed_by: row.performed_by ?? "—",
-      notes: row.notes ?? movementNotesMap.get(row.movement_id) ?? row.reference ?? "—",
-      lot_number: row.lot_number ?? "—",
-    })).filter((row) => !selectedEnvironmentName || row.environment === selectedEnvironmentName);
-  }, [kardexRows, materialFilter, materialsMap, stockTotalsMap, environmentFilter, environmentsMap, movementNotesMap]);
+    const sortedMovements = [...(movements ?? [])].sort(
+      (a, b) => new Date(a.performed_at).getTime() - new Date(b.performed_at).getTime()
+    );
+    const balances = new Map<string, number>();
+
+    return sortedMovements.map((movement) => {
+      const material = materialsMap.get(movement.material_id);
+      const currentStock = stockTotalsMap.get(movement.material_id);
+      const previousTotal = balances.get(movement.material_id) ?? 0;
+      const movementDelta = movement.type === "entry"
+        ? movement.quantity
+        : movement.type === "exit"
+          ? -movement.quantity
+          : 0;
+      const runningTotal = previousTotal + movementDelta;
+      balances.set(movement.material_id, runningTotal);
+
+      return {
+        material_id: movement.material_id,
+        performed_at: movement.performed_at,
+        type: movement.type,
+        material_name: material?.name ?? (movement.material as { name: string } | undefined)?.name ?? "—",
+        material_code: material?.code ?? (movement.material as { code: string } | undefined)?.code ?? "—",
+        category: material?.category ?? (movement.material as { category?: string | null } | undefined)?.category ?? "—",
+        unit: material?.unit ?? (movement.material as { unit: string } | undefined)?.unit ?? "—",
+        quantity_in: movement.type === "entry" ? movement.quantity : 0,
+        quantity_out: movement.type === "exit" ? movement.quantity : 0,
+        running_total: runningTotal,
+        stock_actual: currentStock?.total_qty ?? runningTotal,
+        environment: (movement.environment as { name: string } | null)?.name ?? environmentsMap.get(movement.environment_id ?? "")?.name ?? "—",
+        performed_by: (movement.performer as { full_name: string } | undefined)?.full_name ?? "—",
+        notes: movement.notes ?? movementNotesMap.get(movement.id) ?? movement.reference ?? "—",
+        lot_number: (movement.lot as { lot_number: string } | null)?.lot_number ?? "—",
+      };
+    })
+      .filter((row) => !categoryFilter || row.category === categoryFilter)
+      .filter((row) => !selectedEnvironmentName || row.environment === selectedEnvironmentName);
+  }, [movements, materialsMap, stockTotalsMap, environmentFilter, environmentsMap, movementNotesMap, categoryFilter]);
 
   const consumptionRows = useMemo(() => {
     const grouped = new Map<string, {
@@ -429,6 +441,7 @@ export default function ReportesPanel() {
       }
       case "kardex-movimientos": {
         const columns: ReportColumn[] = [
+          { id: "category", label: "Categoría", render: (row) => String(row.category ?? "—") },
           { id: "performed_at", label: "Fecha / hora", render: (row) => formatDateTime(String(row.performed_at ?? "")) },
           { id: "type", label: "Tipo", render: (row) => movementLabel(String(row.type ?? "" ) as Movement["type"]) },
           { id: "material_name", label: "Material", render: (row) => String(row.material_name ?? "—") },
@@ -447,12 +460,12 @@ export default function ReportesPanel() {
           columns,
           defaultColumnIds: TEMPLATES[reportTemplate].defaultColumns,
           summaryCards: [
-            { label: "Movimientos", value: kardexReportRows.length.toLocaleString("es-PE"), note: materialFilter ? "Material seleccionado" : "Selecciona un material" },
+            { label: "Movimientos", value: kardexReportRows.length.toLocaleString("es-PE"), note: "Registros visibles" },
             { label: "Entradas", value: kardexReportRows.reduce((sum, row) => sum + Number(row.quantity_in ?? 0), 0).toLocaleString("es-PE"), note: "Unidades" },
             { label: "Salidas", value: kardexReportRows.reduce((sum, row) => sum + Number(row.quantity_out ?? 0), 0).toLocaleString("es-PE"), note: "Unidades" },
           ],
-          emptyTitle: materialFilter ? "Sin movimientos" : "Selecciona un material",
-          emptyDescription: materialFilter ? "No hay movimientos para el rango seleccionado." : "El Kardex requiere seleccionar un material.",
+          emptyTitle: "Sin movimientos",
+          emptyDescription: "No hay movimientos para el rango seleccionado.",
         };
       }
       case "consumo-material": {
@@ -832,14 +845,14 @@ export default function ReportesPanel() {
             <h3 className="text-sm font-semibold text-slate-900">
               {reportConfig.rows.length} registros · {rangeLabel}
             </h3>
-            {isKardex && !materialFilter && (
+            {isKardex && (
               <span className="ml-auto text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">
-                Selecciona un material para ver el Kardex
+                Se muestran todos los movimientos del período
               </span>
             )}
           </div>
 
-          {(reportTemplate === "kardex-movimientos" ? kardexLoading : movementsLoading) ? (
+          {movementsLoading ? (
             <LoadingSpinner />
           ) : !reportConfig.rows.length ? (
             <EmptyState title={reportConfig.emptyTitle} description={reportConfig.emptyDescription} />
