@@ -30,7 +30,8 @@ type ReportTemplateId =
   | "stock-actual"
   | "kardex-movimientos"
   | "consumo-material"
-  | "materiales-bajo-stock";
+  | "materiales-bajo-stock"
+  | "reporte-semanal";
 
 type TypeFilter = "all" | "entry" | "exit" | "adjustment";
 type ColumnAlign = "left" | "right";
@@ -81,6 +82,11 @@ const TEMPLATES: Record<ReportTemplateId, { label: string; description: string; 
     description: "Materiales que están por debajo del stock mínimo",
     defaultColumns: ["material_name", "category", "unit", "stock_actual", "min_stock", "difference"],
   },
+  "reporte-semanal": {
+    label: "Reporte semanal",
+    description: "Resumen semanal por material con categoría, stock real, entradas y salidas",
+    defaultColumns: ["category", "material_name", "stock_real", "quantity_in", "quantity_out"],
+  },
 };
 
 const REPORT_COLUMNS_STORAGE_KEY = "kardex.reportes.columnas.v1";
@@ -91,6 +97,7 @@ function getDefaultColumnSettings() {
     "kardex-movimientos": TEMPLATES["kardex-movimientos"].defaultColumns,
     "consumo-material": TEMPLATES["consumo-material"].defaultColumns,
     "materiales-bajo-stock": TEMPLATES["materiales-bajo-stock"].defaultColumns,
+    "reporte-semanal": TEMPLATES["reporte-semanal"].defaultColumns,
   } satisfies Record<ReportTemplateId, string[]>;
 }
 
@@ -251,25 +258,28 @@ export default function ReportesPanel() {
   };
 
   const stockActualRows = useMemo(() => {
-    return (stockByLot ?? [])
-      .filter((row) => !categoryFilter || (materialsMap.get(row.material_id)?.category ?? "") === categoryFilter)
-      .map((row) => {
-        const lot = lotsMap.get(row.lot_id);
-        const material = materialsMap.get(row.material_id);
-        const stockTotal = stockTotalsMap.get(row.material_id)?.total_qty ?? row.available_qty;
+    return (materials ?? [])
+      .filter((material) => !categoryFilter || (material.category ?? "") === categoryFilter)
+      .map((material) => {
+        const stockTotal = stockTotalsMap.get(material.id)?.total_qty ?? 0;
         return {
-          material_id: row.material_id,
-          material_name: row.material_name,
-          material_code: row.material_code,
-          category: material?.category ?? "—",
-          unit: row.unit,
-          stock_actual: row.available_qty,
+          material_id: material.id,
+          material_name: material.name,
+          material_code: material.code,
+          category: material.category ?? "—",
+          unit: material.unit,
+          stock_actual: stockTotal,
           stock_total: stockTotal,
-          supplier: lot?.supplier_id ? (suppliersMap.get(lot.supplier_id)?.name ?? "—") : "—",
-          lot_number: row.lot_number,
+          supplier: material.default_supplier_id ? (suppliersMap.get(material.default_supplier_id)?.name ?? "—") : "—",
+          lot_number: "—",
         };
+      })
+      .sort((a, b) => {
+        const categoryCompare = String(a.category ?? "").localeCompare(String(b.category ?? ""), "es");
+        if (categoryCompare !== 0) return categoryCompare;
+        return String(a.material_name ?? "").localeCompare(String(b.material_name ?? ""), "es");
       });
-  }, [stockByLot, categoryFilter, materialsMap, lotsMap, suppliersMap, stockTotalsMap]);
+  }, [materials, categoryFilter, suppliersMap, stockTotalsMap]);
 
   const kardexReportRows = useMemo(() => {
     if (!materialFilter) return [];
@@ -327,6 +337,50 @@ export default function ReportesPanel() {
     return Array.from(grouped.values()).sort((a, b) => b.consumed_qty - a.consumed_qty);
   }, [movements, materialsMap, stockTotalsMap]);
 
+  const weeklyRows = useMemo(() => {
+    const grouped = new Map<string, {
+      material_id: string;
+      category: string;
+      material_name: string;
+      stock_real: number;
+      quantity_in: number;
+      quantity_out: number;
+      unit: string;
+    }>();
+
+    (movements ?? [])
+      .filter((movement) => movement.type === "entry" || movement.type === "exit")
+      .forEach((movement) => {
+        const material = materialsMap.get(movement.material_id);
+        const current = grouped.get(movement.material_id) ?? {
+          material_id: movement.material_id,
+          category: material?.category ?? (movement.material as { category?: string | null } | undefined)?.category ?? "—",
+          material_name: material?.name ?? (movement.material as { name: string } | undefined)?.name ?? "—",
+          stock_real: stockTotalsMap.get(movement.material_id)?.total_qty ?? 0,
+          quantity_in: 0,
+          quantity_out: 0,
+          unit: material?.unit ?? (movement.material as { unit: string } | undefined)?.unit ?? "—",
+        };
+
+        if (movement.type === "entry") {
+          current.quantity_in += movement.quantity;
+        }
+
+        if (movement.type === "exit") {
+          current.quantity_out += movement.quantity;
+        }
+
+        current.stock_real = stockTotalsMap.get(movement.material_id)?.total_qty ?? current.stock_real;
+        grouped.set(movement.material_id, current);
+      });
+
+    return Array.from(grouped.values()).sort((a, b) => {
+      const categoryCompare = a.category.localeCompare(b.category, "es");
+      if (categoryCompare !== 0) return categoryCompare;
+      return a.material_name.localeCompare(b.material_name, "es");
+    });
+  }, [movements, materialsMap, stockTotalsMap]);
+
   const lowStockRows = useMemo(() => {
     return (stockAlerts ?? [])
       .filter((alert) => alert.low_stock)
@@ -365,9 +419,9 @@ export default function ReportesPanel() {
           columns,
           defaultColumnIds: TEMPLATES[reportTemplate].defaultColumns,
           summaryCards: [
-            { label: "Lotes", value: stockActualRows.length.toLocaleString("es-PE"), note: "Registros disponibles" },
-            { label: "Materiales", value: new Set(stockActualRows.map((row) => row.material_id)).size.toLocaleString("es-PE"), note: "Materiales únicos" },
-            { label: "Stock seleccionado", value: stockSelected ? formatQty(stockSelected.total_qty, stockSelected.unit) : "—", note: materialFilter ? "Material actual" : "Selecciona un material" },
+            { label: "Materiales", value: stockActualRows.length.toLocaleString("es-PE"), note: "Registros disponibles" },
+            { label: "Con stock", value: stockActualRows.filter((row) => Number(row.stock_actual ?? 0) > 0).length.toLocaleString("es-PE"), note: "Materiales con stock real" },
+            { label: "Stock total", value: stockActualRows.reduce((sum, row) => sum + Number(row.stock_actual ?? 0), 0).toLocaleString("es-PE"), note: "Suma general" },
           ],
           emptyTitle: "Sin stock disponible",
           emptyDescription: "No hay registros de stock para los filtros seleccionados.",
@@ -449,6 +503,29 @@ export default function ReportesPanel() {
           emptyDescription: "No hay materiales bajo el stock mínimo con los filtros actuales.",
         };
       }
+      case "reporte-semanal": {
+        const columns: ReportColumn[] = [
+          { id: "category", label: "Categoría", render: (row) => String(row.category ?? "—") },
+          { id: "material_name", label: "Material", render: (row) => String(row.material_name ?? "—") },
+          { id: "stock_real", label: "Stock real", align: "right", render: (row) => formatQty(Number(row.stock_real ?? 0), String(row.unit ?? "")) },
+          { id: "quantity_in", label: "Entradas", align: "right", render: (row) => formatQty(Number(row.quantity_in ?? 0), String(row.unit ?? "")) },
+          { id: "quantity_out", label: "Salidas", align: "right", render: (row) => formatQty(Number(row.quantity_out ?? 0), String(row.unit ?? "")) },
+        ];
+        return {
+          title: "Reporte semanal",
+          description: TEMPLATES[reportTemplate].description,
+          rows: weeklyRows,
+          columns,
+          defaultColumnIds: TEMPLATES[reportTemplate].defaultColumns,
+          summaryCards: [
+            { label: "Materiales", value: weeklyRows.length.toLocaleString("es-PE"), note: "Con movimientos en el período" },
+            { label: "Entradas", value: weeklyRows.reduce((sum, row) => sum + Number(row.quantity_in ?? 0), 0).toLocaleString("es-PE"), note: "Unidades" },
+            { label: "Salidas", value: weeklyRows.reduce((sum, row) => sum + Number(row.quantity_out ?? 0), 0).toLocaleString("es-PE"), note: "Unidades" },
+          ],
+          emptyTitle: "Sin movimientos semanales",
+          emptyDescription: "No hay entradas ni salidas en el período seleccionado.",
+        };
+      }
     }
   }, [
     reportTemplate,
@@ -456,6 +533,7 @@ export default function ReportesPanel() {
     kardexReportRows,
     consumptionRows,
     lowStockRows,
+    weeklyRows,
     stockSelected,
   ]);
 

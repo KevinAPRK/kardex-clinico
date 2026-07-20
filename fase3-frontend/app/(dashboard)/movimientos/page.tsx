@@ -48,11 +48,16 @@ export default function MovimientosPage() {
     limit: 100,
   });
   const { data: materials } = useMaterials();
+  const { data: stockByMaterial } = useStockByMaterial();
   const { data: environments } = useEnvironments();
   const { data: allEnvironments } = useAllEnvironments();
   const environmentsMap = useMemo(
     () => new Map((allEnvironments ?? []).map((environment) => [environment.id, environment.name])),
     [allEnvironments]
+  );
+  const stockMap = useMemo(
+    () => new Map((stockByMaterial ?? []).map((item) => [item.material_id, { total_qty: item.total_qty, unit: item.unit }])),
+    [stockByMaterial]
   );
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -104,6 +109,7 @@ export default function MovimientosPage() {
           <EntradaForm
             materials={materials ?? []}
             environments={environments ?? []}
+            stockMap={stockMap}
             onSuccess={(msg) => { showFeedback(msg); refetchMovements(); setActiveTab("historial"); }}
             onError={(msg) => showFeedback(msg, true)}
           />
@@ -112,6 +118,7 @@ export default function MovimientosPage() {
           <SalidaForm
             materials={materials ?? []}
             environments={environments ?? []}
+            stockMap={stockMap}
             onSuccess={(msg) => { showFeedback(msg); refetchMovements(); setActiveTab("historial"); }}
             onError={(msg) => showFeedback(msg, true)}
           />
@@ -208,9 +215,10 @@ function HistorialTab({ movements, environmentsMap, loading, typeFilter, setType
 }
 
 // ── ENTRADA FORM ─────────────────────────────────────────────
-function EntradaForm({ materials, environments, onSuccess, onError }: {
+function EntradaForm({ materials, environments, stockMap, onSuccess, onError }: {
   materials: import("@/types").Material[];
   environments: import("@/types").Environment[];
+  stockMap: Map<string, { total_qty: number; unit: string }>;
   onSuccess: (msg: string) => void;
   onError: (msg: string) => void;
 }) {
@@ -240,6 +248,8 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
     onSuccess(`✅ Entrada registrada correctamente.`);
   }
 
+  const currentStock = selectedMaterialId ? stockMap.get(selectedMaterialId) ?? null : null;
+
   return (
     <div className="max-w-xl">
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
@@ -252,17 +262,20 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
             control={control}
             name="material_id"
             render={({ field, fieldState }) => (
-              <MaterialSearchSelect
-                label="Material *"
-                materials={materials}
-                value={field.value ?? ""}
-                error={fieldState.error?.message}
-                placeholder="Escribe para buscar material"
-                onChange={(materialId) => {
-                  field.onChange(materialId);
-                  setValue("requires_lot", false);
-                }}
-              />
+              <div className="space-y-2">
+                <MaterialSearchSelect
+                  label="Material *"
+                  materials={materials}
+                  value={field.value ?? ""}
+                  error={fieldState.error?.message}
+                  placeholder="Escribe para buscar material"
+                  onChange={(materialId) => {
+                    field.onChange(materialId);
+                    setValue("requires_lot", false);
+                  }}
+                />
+                <StockPreview stock={currentStock} />
+              </div>
             )}
           />
 
@@ -297,17 +310,21 @@ function EntradaForm({ materials, environments, onSuccess, onError }: {
 }
 
 // ── SALIDA FORM ──────────────────────────────────────────────
-function SalidaForm({ materials, environments, onSuccess, onError }: {
+function SalidaForm({ materials, environments, stockMap, onSuccess, onError }: {
   materials: import("@/types").Material[];
   environments: import("@/types").Environment[];
+  stockMap: Map<string, { total_qty: number; unit: string }>;
   onSuccess: (msg: string) => void;
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const { control, register, handleSubmit, reset, formState: { errors } } = useForm<ExitFormValues>({
+  const { control, register, handleSubmit, watch, reset, formState: { errors } } = useForm<ExitFormValues>({
     resolver: zodResolver(exitSchema),
     defaultValues: { performed_at: todayDateValue() },
   });
+
+  const selectedMaterialId = watch("material_id");
+  const currentStock = selectedMaterialId ? stockMap.get(selectedMaterialId) ?? null : null;
 
   async function onSubmit(values: ExitFormValues) {
     setSaving(true);
@@ -334,14 +351,17 @@ function SalidaForm({ materials, environments, onSuccess, onError }: {
             control={control}
             name="material_id"
             render={({ field, fieldState }) => (
-              <MaterialSearchSelect
-                label="Material *"
-                materials={materials}
-                value={field.value ?? ""}
-                error={fieldState.error?.message}
-                placeholder="Escribe para buscar material"
-                onChange={field.onChange}
-              />
+              <div className="space-y-2">
+                <MaterialSearchSelect
+                  label="Material *"
+                  materials={materials}
+                  value={field.value ?? ""}
+                  error={fieldState.error?.message}
+                  placeholder="Escribe para buscar material"
+                  onChange={field.onChange}
+                />
+                <StockPreview stock={currentStock} />
+              </div>
             )}
           />
 
@@ -568,6 +588,25 @@ function MaterialSearchSelect({
         )}
       </div>
     </FormField>
+  );
+}
+
+function StockPreview({ stock }: { stock: { total_qty: number; unit: string } | null }) {
+  if (!stock) {
+    return (
+      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+        Selecciona un material para ver su stock actual.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-emerald-700">Stock actual</p>
+      <p className="mt-0.5 text-sm font-semibold text-emerald-900">
+        {formatQty(stock.total_qty, stock.unit)}
+      </p>
+    </div>
   );
 }
 
